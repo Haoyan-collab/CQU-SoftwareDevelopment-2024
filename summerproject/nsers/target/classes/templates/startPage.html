@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th= "https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新生入学管理系统</title>
+    <style>
+        body {
+            background-color: transparent;
+            background-image: url('/images/background.jpg'); /* 添加背景图 */
+            background-size: cover; /* 背景图覆盖整个页面 */
+            background-position: center; /* 背景图居中显示 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            border: none;
+        }
+
+        .container {
+            background-color: transparent;
+            border: none;
+            border-radius: 8px;
+            padding: 20px;
+
+            max-width: 400px; /* Updated to match the style description */
+            max-height: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 30px;
+            margin-bottom: 20px;
+            text-align: center;
+
+        }
+
+        .login-button {
+            width: 80%;
+            margin-left: 10%;
+            margin-top: 10px; /* Changed from margin to margin-top */
+            margin-bottom: 8px; /* Added margin-bottom for spacing */
+            padding: 12px 10px; /* Adjusted padding */
+            border: 1px solid #ddd;
+            background-color: #0066ff;
+            color: #ffffff;
+            cursor: pointer;
+            border-radius: 100px;
+            font-size: 16px;
+            transition: background-color 0.3s, color 0.3s;
+            display: block; /* Ensures buttons are block-level */
+            text-decoration: none; /* Removes underline from buttons */
+            text-align: center; /* Centers text within buttons */
+        }
+
+        #TitleImg{
+            width: 200px;
+            padding-left: 25%;
+        }
+
+        .register-button, .forget-button{
+            width: 100%;
+            margin-top: 10px; /* Changed from margin to margin-top */
+            margin-bottom: 8px; /* Added margin-bottom for spacing */
+            padding: 12px 10px; /* Adjusted padding */
+            border: 1px hidden #ddd;
+            background-color: transparent;
+            color: #000000;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: background-color 0.3s, color 0.3s;
+            display: block; /* Ensures buttons are block-level */
+            text-decoration: none; /* Removes underline from buttons */
+            text-align: center; /* Centers text within buttons */
+        }
+
+        .login-button:hover{
+            background-color: #4560a0;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>新生入学管理系统</h1>
+    <img th:src="@{/images/cqu.png}" alt="CQU" id="TitleImg" >
+    <button class="login-button" onclick="signin()">登录</button>
+<!--    <button class="register-button" onclick="enroll()">没有账号？注册一个</button>-->
+<!--    <button class="forget-button" onclick="forget()">忘记密码</button>-->
+</div>
+
+<script>
+    function signin() {
+        window.location.href = 'http://localhost:8080/start/loginPage';    //定向至登录页面
+    }
+
+    // function enroll() {
+    //     window.location.href = 'http://localhost:8080/start/registerPage';   //定向到注册界面
+    // }
+
+    // function forget() {
+    //     window.location.href = 'http://localhost:8080/start/emailVerificationPage';   //定向到注册界面
+    // }
+
+</script>
+</body>
+</html>
+

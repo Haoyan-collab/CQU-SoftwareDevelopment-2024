@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>查询课程成绩</title>
+  <style>
+    body {
+      background-color: #f4f4f9;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      width: 80%;
+      max-width: 800px;
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+
+    .back-button {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      padding: 5px 10px;
+      background-color: #5599FF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .form-section {
+      margin-bottom: 20px;
+    }
+
+    .form-input {
+      padding: 10px;
+      width: calc(100% - 22px);
+      margin-right: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .submit-button {
+      padding: 10px 20px;
+      background-color: #5599FF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .submit-button:hover {
+      background-color: #99bbff;
+    }
+
+    .sort-buttons {
+      margin-bottom: 20px;
+    }
+
+    .sort-button {
+      padding: 10px 20px;
+      background-color: #5599FF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+
+    .sort-button:hover {
+      background-color: #99bbff;
+    }
+
+    .results-section {
+      margin-top: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #f2f2f2;
+      font-weight: bold;
+    }
+
+    .chart-container {
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .bar {
+      height: 20px;
+      margin-bottom: 5px;
+      background-color: #5599FF;
+      position: relative;
+      overflow: hidden; /* 确保文本不会溢出 */
+    }
+
+    .bar span {
+      position: absolute;
+      right: 5px;
+      color: black; /* 文本颜色改为黑色 */
+      font-size: 12px;
+      line-height: 20px; /* 确保文本垂直居中 */
+      white-space: nowrap; /* 防止文字换行 */
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <!-- 返回按钮 -->
+  <button id="backButton" class="back-button">返回</button>
+
+  <h1>查询课程成绩</h1>
+
+  <!-- 表单部分 -->
+  <div id="formSection" class="form-section">
+    <input type="text" id="classNameInput" class="form-input" placeholder="请输入课程名称">
+    <button id="submitButton" class="submit-button">查询</button>
+  </div>
+
+  <!-- 排序按钮 -->
+  <div class="sort-buttons">
+    <button id="sortByTotal" class="sort-button">按总分排序</button>
+    <button id="sortByStudentId" class="sort-button">按学生ID排序</button>
+  </div>
+
+  <!-- 成绩分布图 -->
+  <div id="chartContainer" class="chart-container"></div>
+
+  <!-- 结果部分 -->
+  <div id="resultsSection" class="results-section"></div>
+</div>
+
+<script>
+  // 监听返回按钮的点击事件
+  document.getElementById('backButton').addEventListener('click', function() {
+    window.location.href = '/adminSystem/adminDashboard';
+  });
+
+  // 监听提交按钮的点击事件
+  document.getElementById('submitButton').addEventListener('click', function() {
+    const className = document.getElementById('classNameInput').value.trim();
+
+    if (!className) {
+      alert('请输入课程名称');
+      return;
+    }
+
+    fetch(`/adminSystem/searchClassGrades`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ cname: className })
+    })
+            .then(response => response.json())
+            .then(data => {
+              if (data.allInfo && data.allInfo.length > 0) {
+                displayResults(data.allInfo);
+                displayChart(data.allInfo);
+              } else {
+                alert('未找到该课程的信息或没有学生选修该课程');
+              }
+            })
+            .catch(error => {
+              console.error('Error searching class grades:', error);
+              alert('发生错误，请重试');
+            });
+  });
+
+  // 显示结果
+  function displayResults(results) {
+    const resultsSection = document.getElementById('resultsSection');
+    resultsSection.innerHTML = ''; // 清空之前的结果显示
+
+    // 创建表格元素
+    const table = document.createElement('table');
+
+    // 创建表头
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    const headers = ['教师', '学号', '姓名', '平时成绩', '期中成绩', '实验成绩', '期末成绩', '总成绩'];
+    headers.forEach(headerText => {
+      const th = document.createElement('th');
+      th.textContent = headerText;
+      headerRow.appendChild(th);
+    });
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    // 创建表格主体
+    const tbody = document.createElement('tbody');
+    results.forEach(result => {
+      const row = document.createElement('tr');
+
+      // 学生信息
+      const cells = [
+        result.teacher,
+        result.studentid,
+        result.studentname,
+        result.regular,
+        result.midterm,
+        result.lab,
+        result.end,
+        result.total
+      ];
+
+      cells.forEach(cellText => {
+        const cell = document.createElement('td');
+        cell.textContent = cellText;
+        row.appendChild(cell);
+      });
+
+      tbody.appendChild(row);
+    });
+    table.appendChild(tbody);
+
+    resultsSection.appendChild(table);
+
+    // 添加排序功能
+    addSortFunctionality(results);
+  }
+
+  // 添加排序功能
+  function addSortFunctionality(students) {
+    const sortByTotalButton = document.getElementById('sortByTotal');
+    const sortByStudentIdButton = document.getElementById('sortByStudentId');
+
+    sortByTotalButton.addEventListener('click', () => {
+      sortStudents(students, (a, b) => b.total - a.total);
+    });
+
+    sortByStudentIdButton.addEventListener('click', () => {
+      sortStudents(students, (a, b) => a.studentid - b.studentid);
+    });
+  }
+
+  // 排序函数
+  function sortStudents(students, compareFn) {
+    students.sort(compareFn);
+
+    const resultsSection = document.getElementById('resultsSection');
+    resultsSection.innerHTML = ''; // 清空之前的结果显示
+
+    // 创建表格元素
+    const table = document.createElement('table');
+
+    // 创建表头
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    const headers = ['教师', '学号', '姓名', '平时成绩', '期中成绩', '实验成绩', '期末成绩', '总成绩'];
+    headers.forEach(headerText => {
+      const th = document.createElement('th');
+      th.textContent = headerText;
+      headerRow.appendChild(th);
+    });
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    // 创建表格主体
+    const tbody = document.createElement('tbody');
+    students.forEach(student => {
+      const row = document.createElement('tr');
+
+      // 学生信息
+      const cells = [
+        student.teacher,
+        student.studentid,
+        student.studentname,
+        student.regular,
+        student.midterm,
+        student.lab,
+        student.end,
+        student.total
+      ];
+
+      cells.forEach(cellText => {
+        const cell = document.createElement('td');
+        cell.textContent = cellText;
+        row.appendChild(cell);
+      });
+
+      tbody.appendChild(row);
+    });
+    table.appendChild(tbody);
+
+    resultsSection.appendChild(table);
+  }
+
+  // 显示成绩分布图
+  function displayChart(students) {
+    const chartContainer = document.getElementById('chartContainer');
+    chartContainer.innerHTML = ''; // 清空之前的成绩分布图
+
+    const scoreRanges = [
+      { range: '0-60', count: 0 },
+      { range: '60-70', count: 0 },
+      { range: '70-80', count: 0 },
+      { range: '80-90', count: 0 },
+      { range: '90以上', count: 0 }
+    ];
+
+    students.forEach(student => {
+      const totalScore = student.total;
+      if (totalScore >= 0 && totalScore < 60) {
+        scoreRanges[0].count++;
+      } else if (totalScore >= 60 && totalScore < 70) {
+        scoreRanges[1].count++;
+      } else if (totalScore >= 70 && totalScore < 80) {
+        scoreRanges[2].count++;
+      } else if (totalScore >= 80 && totalScore < 90) {
+        scoreRanges[3].count++;
+      } else if (totalScore >= 90) {
+        scoreRanges[4].count++;
+      }
+    });
+
+    const totalStudents = students.length;
+
+    scoreRanges.forEach(range => {
+      const barDiv = document.createElement('div');
+      barDiv.style.width = `${(range.count / totalStudents * 100).toFixed(2)}%`;
+      barDiv.classList.add('bar');
+      barDiv.title = `${range.range}: ${range.count}人 (${((range.count / totalStudents) * 100).toFixed(2)}%)`;
+
+      const labelSpan = document.createElement('span');
+      labelSpan.textContent = `${range.range}: ${range.count}人 (${((range.count / totalStudents) * 100).toFixed(2)}%)`;
+      labelSpan.style.position = 'absolute';
+      labelSpan.style.right = '5px';
+      labelSpan.style.color = 'black'; // 文本颜色改为黑色
+      labelSpan.style.whiteSpace = 'nowrap'; // 防止文字换行
+
+      barDiv.appendChild(labelSpan);
+      chartContainer.appendChild(barDiv);
+    });
+  }
+</script>
+</body>
+</html>
+
+
+

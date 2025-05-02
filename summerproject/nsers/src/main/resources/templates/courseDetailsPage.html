@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>选课界面</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f2f2f2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .background {
+      background-image: url('/images/background.jpg');
+      background-size: cover;
+      background-position: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+    .container {
+      width: 80%;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      text-align: center;
+    }
+    .back-button {
+      background-color: transparent;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 4px;
+      font-weight: bolder;
+      cursor: pointer;
+      font-size: 30px;
+      position: absolute; /* 使用绝对定位 */
+      top: 20px; /* 距离顶部20px */
+      left: 20px; /* 距离左侧20px */
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+      color: #333;
+      font-weight: bold;
+    }
+    .pagination {
+      margin-top: 20px;
+    }
+    .pagination button {
+      padding: 10px 20px;
+      margin: 0 5px;
+      border: none;
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .pagination button:hover {
+      background-color: #45a049;
+    }
+    .select-button {
+      padding: 5px 10px;
+      border: none;
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .select-button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+<div class="background"></div>
+<div class="container">
+  <button class="back-button" onclick="backbutton()">←</button>
+  <table>
+    <thead>
+    <tr>
+      <th>课程名</th>
+<!--      <th>上课地点</th>-->
+      <th>上课时间</th>
+      <th>上课老师</th>
+      <th>课程状态</th>
+      <th>操作</th>
+    </tr>
+    </thead>
+    <tbody id="courseTable">
+    <!-- 表格内容将由JavaScript生成 -->
+    </tbody>
+  </table>
+  <div class="pagination">
+    <button id="prevPage">上一页</button>
+    <button id="nextPage">下一页</button>
+  </div>
+</div>
+
+<script>
+  setTimeout(() => {
+    renderTable(1); // 假设我们显示第一页的数据
+  }, 10);
+
+  function backbutton(){  //回退
+    window.location.href='http://localhost:8080/functionPage/selectCoursePage'
+  }
+  console.log(localStorage.getItem('pickCourse'))
+  const rowsPerPage = 10;  //每页显示的课程数量上限
+  let currentPage = 1;  //初始显示第0页
+  const Data = [];
+  const cnamePack=new FormData()
+  cnamePack.append('sid',localStorage.getItem('studentid'))
+  cnamePack.append('cname',localStorage.getItem('pickCourse'))
+  fetch('/functionPage/showSelectCourse2',{  //发送请求
+    method:"POST",
+    body:cnamePack
+  })
+          .then(response=>response.json())
+          .then(data=>{
+            const courseInfo=data['TeacherStatus'];
+            console.log(courseInfo);
+            let BorderIndex = courseInfo.indexOf('BorderEnd');
+            for(let i=2;i<BorderIndex;i=i+2){
+              if(courseInfo[i]!=='Border'){
+                Data.push({'course':localStorage.getItem('pickCourse'),'location':courseInfo[0],'time':courseInfo[1],'teacher':courseInfo[i],'status':courseInfo[i+1],'Pagecid':i/2-1})
+              }
+
+            }
+            console.log(Data)
+            renderTable(currentPage);
+          })
+
+  function renderTable(page) {
+    const table = document.getElementById('courseTable');
+    table.innerHTML = '';
+    const start = (page - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    const pageData = Data.slice(start, end);
+
+    for (const row of pageData) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+                    <td>${row.course}</td>
+                    <td>${row.time}</td>
+                    <td>${row.teacher}</td>
+                    <td>${row.status}</td>
+                    <td><button class="select-button" onclick="pickCourseOperation(this.id)" id="${row.Pagecid}" >选课</button></td>
+                `;
+      table.appendChild(tr); //插入页面html动态表格
+    }
+  }
+
+  function findCourseByPagecid(obj, value) {   //通过页面的课程id查找课程
+    for(let j=0;j<obj.length;j=j+1){
+      if(obj[j]['Pagecid']===value){
+        return obj[j];
+      }
+    }
+    return false;
+  }
+
+  function pickCourseOperation(Pagecid){    //选课操作
+    const pickCourseList=findCourseByPagecid(Data,parseInt(Pagecid));
+    if(pickCourseList!==false && pickCourseList['status']==='可选'){
+      let sid=localStorage.getItem('studentid'); //测试样例，记得改
+      let cname=pickCourseList['course'];
+      let tname=pickCourseList['teacher'];
+      var PackSend=new FormData();
+      PackSend.append('sid',sid);
+      PackSend.append('cname',cname);
+      PackSend.append('tname',tname);
+      fetch('/functionPage/showSelectCourse3',{  //发出请求
+        method:'POST',
+        body:PackSend
+      })
+              .then(response=>response.json())
+              .then(data=>{
+                if(data['success']){
+                  alert(data['message'])
+                  location.reload();
+                }else{
+                  alert('选课失败，请查看课程情况')
+                }
+              })
+    }else{
+      alert('选课失败，请查看课程情况')
+    }
+  }
+
+
+  document.getElementById('prevPage').addEventListener('click', () => {  //翻页操作
+    if (currentPage > 1) {
+      currentPage--;
+      renderTable(currentPage);
+    }
+  });
+
+  document.getElementById('nextPage').addEventListener('click', () => { //翻页操作
+    if (currentPage * rowsPerPage < Data.length) {
+      currentPage++;
+      renderTable(currentPage);
+    }
+  });
+
+  // renderTable(currentPage);
+</script>
+</body>
+</html>

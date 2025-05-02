@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>校园导航</title>
+  <style>
+    .background {
+      background-image: url('/images/background.jpg'); /* 替换 'your-background-image.jpg' 为你的实际图片路径 */
+      background-size: cover;
+      background-position: center;
+      object-fit: cover;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1; /* 确保它位于其他内容后面 */
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background-color: transparent;
+      color: #333;
+      font-family: Arial, sans-serif;
+    }
+    .back-button {
+      background-color: transparent;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 4px;
+      font-weight: bolder;
+      cursor: pointer;
+      font-size: 30px;
+      position: absolute; /* 使用绝对定位 */
+      top: 20px; /* 距离顶部20px */
+      left: 20px; /* 距离左侧20px */
+    }
+    .button {
+      margin: 10px;
+      padding: 15px 30px;
+      background-color: #5599FF;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      font-size: 18px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+
+    .button:hover {
+      background-color: #99bbff;
+      transform: scale(1.05);
+    }
+
+    .button:active {
+      transform: scale(0.95);
+    }
+
+    .button:focus {
+      box-shadow: 0 0 10px rgba(0, 122, 255, 0.7);
+    }
+  </style>
+</head>
+<body>
+<div class="background"></div>
+<div class="container">
+  <button class="back-button" onclick="backbutton()">←</button>
+  <button onclick="navigateTo('busPage')" class="button">校车时刻表</button>
+  <button onclick="navigateTo('mapPage')" class="button">校园地图</button>
+  <button onclick="navigateTo('yellowPage')" class="button">校园黄页</button>
+</div>
+
+<script>
+  function backbutton(){
+    window.location.href ='http://localhost:8080/functionPage'
+  }
+  function navigateTo(page) {
+    window.location.href = `/schoolBus/${page}`;
+  }
+</script>
+</body>
+</html>

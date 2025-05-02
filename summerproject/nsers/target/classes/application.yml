@@ -1,0 +1,40 @@
+server:
+  port: 8080
+spring:
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/db_of_nsers?characterEncoding=utf-8&useSSL=false&serverTimezone=UTC
+    username: shy
+    password: 123456
+  #热部署
+#  devtools:
+#    restart:
+#      enabled: true
+#  #邮箱服务器
+#  mail:
+#    host: smtp.qq.com
+#    port: 587
+#    username: 3261474309@qq.com
+#    password: zxxersbjxsmhchgj
+#    properties:
+#      mail:
+#        smtp:
+#          auth: true
+#          starttls:
+#            enable: true
+#          ssl:
+#            enable: false
+#  #暴漏图片路径放行
+#  web:
+#    resources:
+#      static-locations: classpath:/static/,file:${photo.file.dir}
+#
+##上传图片路径
+#photo:
+#  file:
+#    dir: D:\code\java\nsers\picture
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

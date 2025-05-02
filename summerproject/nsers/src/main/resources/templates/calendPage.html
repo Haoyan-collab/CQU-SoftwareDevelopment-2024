@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th= "https://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>校历页面</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start; /* 让图片从顶部开始显示 */
+      height: 100vh;
+      overflow-y: auto; /* 允许垂直滚动 */
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+<img th:src="@{/images/schoolCalendar.jpg}" alt="校历图片">
+</body>
+</html>

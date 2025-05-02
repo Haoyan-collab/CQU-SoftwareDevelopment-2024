@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>教务端仪表盘</title>
+  <style>
+    body {
+      background-color: #f4f4f9;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .dashboard-container {
+      text-align: center;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      background-color: white;
+      width: 80%;
+      max-width: 800px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 90%; /* 确保容器有足够的高度 */
+    }
+
+    .content-section {
+      margin-bottom: 20px; /* 添加一些底部间距 */
+    }
+
+    .query-button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #5599FF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .query-button:hover {
+      background-color: #99bbff;
+    }
+
+    .logout-button {
+      padding: 5px 10px; /* 缩小按钮尺寸 */
+      background-color: red; /* 设置为红色 */
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .logout-button:hover {
+      background-color: darkred; /* 悬停时变为深红色 */
+    }
+  </style>
+</head>
+<body>
+<div class="dashboard-container">
+  <div class="content-section">
+    <h1>欢迎来到教务端</h1>
+
+    <!-- 查询学生成绩按钮 -->
+    <a href="/adminSystem/searchGradesPage" class="query-button">查询学生成绩</a>
+
+    <!-- 查询教学班成绩按钮 -->
+    <a href="/adminSystem/searchClassroomPage" class="query-button">查询教学班成绩</a>
+
+    <!-- 添加课程按钮 -->
+    <a href="/adminSystem/addClassPage" class="query-button">添加课程</a>
+
+    <!-- 查询课程成绩按钮 -->
+    <a href="/adminSystem/searchClassPage" class="query-button">查询课程成绩</a>
+  </div>
+
+  <!-- 登出按钮 -->
+  <button id="logoutButton" class="logout-button">登出</button>
+</div>
+
+<script>
+  // 监听登出按钮的点击事件
+  document.getElementById('logoutButton').addEventListener('click', function() {
+    window.location.href = 'http://localhost:8080/startPage';
+  });
+</script>
+</body>
+</html>

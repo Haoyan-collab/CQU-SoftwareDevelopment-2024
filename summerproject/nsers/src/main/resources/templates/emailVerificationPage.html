@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email验证</title>
+  <style>
+    body {
+      background-color: transparent;
+      background-image: url('/images/background.jpg'); /* 添加背景图 */
+      background-size: cover; /* 背景图覆盖整个页面 */
+      background-position: center; /* 背景图居中显示 */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      border: none;
+    }
+
+    .container {
+      background-color: transparent;
+      padding: 20px;
+      border-radius: 8px;
+      width: 400px;
+      text-align: center;
+      border: none;
+    }
+
+    .back-button {
+      background-color: transparent;
+      color: rgb(137, 137, 137);
+      padding: 10px; /* 按钮大小调整 */
+      border: none;
+      border-radius: 4px;
+      font-weight: bolder;
+      cursor: pointer;
+      margin-left: -90%;
+      font-size: 30px;
+    }
+
+    input {
+      width: calc(100% - 20px);
+      padding: 10px;
+      margin: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    .greenbutton {
+      background-color: #5599FF;
+      color: white;
+      padding: 10px 20px; /* 按钮大小调整 */
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 10px;
+      font-size: 16px;
+      width: calc(50% - 25px); /* 让按钮和输入框一样宽 */
+    }
+
+    .back-button:hover {
+      background-color: #c3c3c3;
+    }
+
+    .greenbutton:hover {
+      background-color: #99bbff;
+    }
+
+    #submitBtn {
+      margin-bottom: 20%;
+    }
+
+    #sendVerification {
+      margin-bottom: 10%;
+    }
+
+    h2 {
+      margin: 10%;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <button class="back-button" onclick="backbutton()">←</button>
+  <h2>邮箱验证码</h2>
+  <form id="emailForm">
+    <input type="text" id="sid" placeholder="请输入学号" required>
+    <button type="button" id="sendVerification" class="greenbutton">发送验证码</button>
+    <input type="text" id="verificationCode" placeholder="请输入验证码" required>
+    <button type="submit" id="submitBtn" class="greenbutton">提交</button>
+  </form>
+</div>
+
+<script>
+  var verificationCode;
+
+  function backbutton() {   //回退
+    window.location.href = 'http://localhost:8080/start/loginPage';
+  }
+
+  document.getElementById('sendVerification').addEventListener('click', function(event) {
+    event.preventDefault();
+    var sid = document.getElementById('sid').value;
+    const sidPack = new FormData();
+    sidPack.append("sid", sid);
+
+    fetch("/start/emailVerification", {    //发送请求获得验证码
+      method: 'POST',
+      body: sidPack
+    })
+            .then(response => response.json())
+            .then(data => {
+              if (data.success) {
+                alert('验证码已发送至' + data.semail);
+                verificationCode = data.verification;
+                localStorage.setItem("studentid", sid);
+              } else {
+                alert('验证码发送失败');
+                verificationCode = null;
+              }
+            });
+  });
+
+  document.getElementById('submitBtn').addEventListener('click', function(event) {    //检视验证码是否正确
+    event.preventDefault();
+    var VerificationCodeInput = document.getElementById('verificationCode').value;
+    if (verificationCode === VerificationCodeInput) {
+      console.log('验证成功');
+      window.location.href = "http://localhost:8080/start/setPasswordPage";
+    } else {
+      alert("验证失败");
+    }
+  });
+</script>
+</body>
+</html>

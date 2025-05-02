@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>校园地点图</title>
+  <style>
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+      background-color: white;
+    }
+
+    .header {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      background-color: #add8e6;
+      position: relative;
+    }
+
+    .back-button {
+      position: absolute;
+      left: 10px;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    .title {
+      font-size: 24px;
+      color: white;
+      margin: 0 auto;
+      text-align: center;
+      flex: 1;
+    }
+
+    .content {
+      width: 100%;
+      height: 90vh;
+      padding: 20px;
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+  <script src="https://map.qq.com/api/gljs?v=1.exp&key=FHYBZ-4DK6V-JPMPT-53HQP-4P4FF-OJBZ3"></script>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <button onclick="goBack()" class="back-button">←</button>
+    <div class="title">校园地点图</div>
+  </div>
+  <div class="content">
+    <div id="map"></div>
+  </div>
+</div>
+<script>
+  function goBack() {
+    window.location.href = 'http://localhost:8080/schoolBus/busMainPage';
+  }
+
+  function initMap() {
+    const center = { lat: 29.592566, lng: 106.29915 };
+    const map = new TMap.Map(document.getElementById('map'), {
+      center: new TMap.LatLng(center.lat, center.lng),
+      zoom: 16
+    });
+
+    const markersData = [
+      { lat: 29.592236, lng: 106.30195, content: '图书馆' },
+      { lat: 29.597275, lng: 106.298186, content: '一食堂' },
+      { lat: 29.596055, lng: 106.29951, content: '综合楼' },
+      { lat: 29.589021, lng: 106.299284, content: '兰园' },
+      { lat: 29.597189, lng: 106.300109, content: '梅园' },
+      { lat: 29.590126, lng: 106.298402, content: '学生活动中心' },
+      { lat: 29.597486, lng: 106.305335, content: '体育馆' },
+      { lat: 29.596922, lng: 106.294176, content: '松园' },
+      { lat: 29.5970985, lng: 106.296181, content: '竹园' },
+      { lat: 29.598365, lng: 106.301083, content: '北门' },
+      { lat: 29.594179, lng: 106.306541, content: '东门' },
+      { lat: 29.592257, lng: 106.291828, content: '西门' },
+      { lat: 29.597481, lng: 106.301704, content: '梅园篮球场' },
+      { lat: 29.596529, lng: 106.301214, content: '公共厕所' },
+      { lat: 29.594393, lng: 106.294444, content: '松园篮球场' },
+      { lat: 29.590811, lng: 106.299241, content: '虎溪校区小剧场' }
+    ];
+
+    markersData.forEach(marker => {
+      const markerObj = new TMap.MultiMarker({
+        map: map,
+        styles: {
+          marker: new TMap.MarkerStyle({
+            width: 30,
+            height: 30,
+            anchor: { x: 16, y: 32 },
+            src: '/images/location.png',
+            opacity: 0.5
+          })
+        },
+        geometries: [{
+          id: marker.content,
+          styleId: 'marker',
+          position: new TMap.LatLng(marker.lat, marker.lng),
+          properties: {
+            title: marker.content
+          }
+        }]
+      });
+
+      markerObj.on('click', (evt) => {
+        new TMap.InfoWindow({
+          map: map,
+          position: evt.geometry.position,
+          content: evt.geometry.properties.title,
+          offset: { x: 0, y: -20 }
+        }).open();
+      });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', initMap);
+</script>
+</body>
+</html>

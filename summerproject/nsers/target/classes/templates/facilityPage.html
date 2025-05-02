@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>设施界面</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f2f2f2;
+    }
+    .background {
+      background-image: url('/images/background.jpg');
+      background-size: cover;
+      background-position: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+    .container {
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .back-button{
+      background-color: transparent;
+      color: rgb(137, 137, 137);
+      padding: 10px; /* 按钮大小调整 */
+      border: none;
+      border-radius: 4px;
+      font-weight: bolder;
+      cursor: pointer;
+      /*margin-left: -90%;*/
+      font-size: 30px;
+    }
+    .search-container {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .search-container input {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .search-container button {
+      padding: 10px 20px;
+      margin-left: 10px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .search-container button:hover {
+      background-color: #0056b3;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+    th, td {
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    .pagination {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .pagination button {
+      padding: 10px 20px;
+      margin: 0 5px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .pagination button:hover {
+      background-color: #0056b3;
+    }
+    .pagination button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+<div class="background"></div>
+<div class="container">
+  <button class="back-button" onclick="backbutton()">←</button>
+  <div class="search-container">
+    <input type="text" id="search-input" placeholder="请输入">
+    <button id="search-button">搜索</button>
+  </div>
+  <table>
+    <thead>
+    <tr>
+      <th>设施名</th>
+      <th>设施类别</th>
+
+    </tr>
+    </thead>
+    <tbody id="facility-tbody">
+    <!-- 后端数据将填充在这里 -->
+    </tbody>
+  </table>
+  <div class="pagination">
+    <button id="prevPage" disabled>上一页</button>
+    <button id="nextPage" disabled>下一页</button>
+  </div>
+</div>
+
+<script>
+  function backbutton(){
+    window.location.href='http://localhost:8080/functionPage'
+  }
+  const rowsPerPage = 6;
+  let currentPage = 1;
+  let filteredData = [];
+
+  const Data = []
+  let Pack=new FormData();
+  fetch('/functionPage/showFacility',{
+    method:'POST',
+    body:Pack
+  })
+          .then(response=>response.json())
+          .then(data=>{
+              const facilityList=data['facilityList']
+            for(let facility of facilityList){
+              Data.push({'name':facility['fname'],'catagory':facility['fkind']})
+            }
+            renderTable(currentPage);
+          })
+
+  function renderTable(page) {
+    const table = document.getElementById('facility-tbody');
+    table.innerHTML = '';
+    const start = (page - 1) * rowsPerPage;
+    const end = Math.min(start + rowsPerPage, filteredData.length);
+    const pageData = filteredData.slice(start, end);
+
+    for (const row of pageData) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+                    <td>${row.name}</td>
+                    <td>${row.catagory}</td>
+                `;
+      table.appendChild(tr);
+    }
+
+    document.getElementById('prevPage').disabled = currentPage === 1;
+    document.getElementById('nextPage').disabled = end >= filteredData.length;
+  }
+
+  document.getElementById('search-button').addEventListener('click', () => {
+    const searchInput = document.getElementById('search-input').value.toLowerCase();
+    filteredData = Data.filter(item =>
+            item.name.toLowerCase().includes(searchInput) ||
+            item.catagory.toLowerCase().includes(searchInput)
+
+    );
+    currentPage = 1;
+    renderTable(currentPage);
+  });
+
+  document.getElementById('prevPage').addEventListener('click', () => {
+    if (currentPage > 1) {
+      currentPage--;
+      renderTable(currentPage);
+    }
+  });
+
+  document.getElementById('nextPage').addEventListener('click', () => {
+    if ((currentPage * rowsPerPage) < filteredData.length) {
+      currentPage++;
+      renderTable(currentPage);
+    }
+  });
+
+  // 初始化显示所有数据
+  filteredData = Data;
+  // renderTable(currentPage);
+</script>
+</body>
+</html>

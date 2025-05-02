@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>查询学生成绩</title>
+  <style>
+    body {
+      background-color: #f4f4f9;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      text-align: center;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      background-color: white;
+      width: 80%;
+      max-width: 800px;
+      position: relative; /* 添加相对定位 */
+    }
+
+    .back-button {
+      position: absolute; /* 绝对定位 */
+      top: 10px; /* 距离顶部的距离 */
+      left: 10px; /* 距离左边的距离 */
+      padding: 10px 20px;
+      background-color: #5599FF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .back-button:hover {
+      background-color: #99bbff;
+    }
+
+    .search-bar {
+      margin-bottom: 20px;
+    }
+
+    .search-bar input[type="text"] {
+      width: calc(100% - 50px);
+      padding: 10px;
+      margin-right: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .search-bar button {
+      padding: 10px 20px;
+      background-color: #5599FF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .search-bar button:hover {
+      background-color: #99bbff;
+    }
+
+    .result-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .result-table th,
+    .result-table td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+
+    .result-table th {
+      background-color: #f2f2f2;
+    }
+
+    .error-message {
+      color: red;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <!-- 返回按钮 -->
+  <a href="/adminSystem/adminDashboard" class="back-button">返回</a>
+
+  <h1>查询学生成绩</h1>
+
+  <!-- 搜索栏 -->
+  <div class="search-bar">
+    <form id="searchFormById" action="#" method="post">
+      <input type="text" id="sid" name="sid" placeholder="请输入学生ID" required>
+      <button type="submit">按ID查询</button>
+    </form>
+    <form id="searchFormByName" action="#" method="post">
+      <input type="text" id="sname" name="sname" placeholder="请输入学生姓名" required>
+      <button type="submit">按姓名查询</button>
+    </form>
+    <div class="error-message" id="errorMessage"></div>
+  </div>
+
+  <!-- 结果显示区域 -->
+  <div id="resultContainer"></div>
+</div>
+
+<script>
+  // 监听按ID查询的表单提交事件
+  document.getElementById('searchFormById').addEventListener('submit', function(event) {
+    event.preventDefault(); // 阻止表单默认提交行为
+
+    var sid = document.getElementById('sid').value;
+
+    // 使用fetch API发送数据到后端
+    fetch('/adminSystem/searchGradesById?sid=' + encodeURIComponent(sid), {
+      method: 'POST'
+    })
+            .then(response => response.json())
+            .then(data => {
+              // 清空之前的错误信息和结果容器
+              document.getElementById('errorMessage').innerHTML = '';
+              document.getElementById('resultContainer').innerHTML = '';
+
+              if (data.error) {
+                // 显示错误信息
+                document.getElementById('errorMessage').innerText = data.error;
+              } else {
+                // 构建并显示结果
+                let resultHtml = `
+                  <h2>学生信息</h2>
+                  <p>ID: ${data.studentid}</p>
+                  <p>姓名: ${data.studentname}</p>
+
+                  <h2>成绩详情</h2>
+                  <table class="result-table">
+                    <thead>
+                      <tr>
+                        <th>课程名</th>
+                        <th>平时分</th>
+                        <th>期中考试</th>
+                        <th>实验</th>
+                        <th>期末考试</th>
+                        <th>总分</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                `;
+
+                data.grades.forEach(grade => {
+                  resultHtml += `
+                    <tr>
+                      <td>${grade.classname}</td>
+                      <td>${grade.regular}</td>
+                      <td>${grade.midterm}</td>
+                      <td>${grade.lab}</td>
+                      <td>${grade.end}</td>
+                      <td>${grade.total}</td>
+                    </tr>
+                  `;
+                });
+
+                resultHtml += `
+                    </tbody>
+                  </table>
+                `;
+
+                document.getElementById('resultContainer').innerHTML = resultHtml;
+              }
+            });
+  });
+
+  // 监听按姓名查询的表单提交事件
+  document.getElementById('searchFormByName').addEventListener('submit', function(event) {
+    event.preventDefault(); // 阻止表单默认提交行为
+
+    var sname = document.getElementById('sname').value;
+
+    // 使用fetch API发送数据到后端
+    fetch('/adminSystem/searchGradesByName?sname=' + encodeURIComponent(sname), {
+      method: 'POST'
+    })
+            .then(response => response.json())
+            .then(data => {
+              // 清空之前的错误信息和结果容器
+              document.getElementById('errorMessage').innerHTML = '';
+              document.getElementById('resultContainer').innerHTML = '';
+
+              if (data.error) {
+                // 显示错误信息
+                document.getElementById('errorMessage').innerText = data.error;
+              } else {
+                // 构建并显示结果
+                let resultHtml = `
+                  <h2>学生信息</h2>
+                  <p>ID: ${data.studentid}</p>
+                  <p>姓名: ${data.studentname}</p>
+
+                  <h2>成绩详情</h2>
+                  <table class="result-table">
+                    <thead>
+                      <tr>
+                        <th>课程名</th>
+                        <th>平时分</th>
+                        <th>期中考试</th>
+                        <th>实验</th>
+                        <th>期末考试</th>
+                        <th>总分</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                `;
+
+                data.grades.forEach(grade => {
+                  resultHtml += `
+                    <tr>
+                      <td>${grade.classname}</td>
+                      <td>${grade.regular}</td>
+                      <td>${grade.midterm}</td>
+                      <td>${grade.lab}</td>
+                      <td>${grade.end}</td>
+                      <td>${grade.total}</td>
+                    </tr>
+                  `;
+                });
+
+                resultHtml += `
+                    </tbody>
+                  </table>
+                `;
+
+                document.getElementById('resultContainer').innerHTML = resultHtml;
+              }
+            });
+  });
+</script>
+</body>
+</html>
+
+
+

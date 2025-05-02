@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th= "https://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>首页咨询页面</title>
+    <script src="echarts"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f2f2f2; /* Fallback color */
+      /* 如果希望背景图片覆盖整个页面，可以移除 background-color */
+    }
+    .background {
+      background-image: url('/images/background.jpg'); /* 替换 'your-background-image.jpg' 为你的实际图片路径 */
+      background-size: cover;
+      background-position: center;
+      object-fit: cover;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1; /* 确保它位于其他内容后面 */
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: transparent;
+      border-radius: 10px;
+      position: relative; /* 确保内容显示在背景之上 */
+      max-height:1000px ;
+      height: 100%;
+
+    }
+    .header {
+      background-color: #f2f2f2;
+      text-align: center;
+      padding: 10px;
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+    }
+    .button-container {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px;
+      background-color: white;
+      flex-wrap: wrap;
+      border-bottom-left-radius: 10px;
+      border-bottom-right-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .button-container button {
+      padding: 15px;
+      border: none;
+      background-color: transparent;
+      cursor: pointer;
+      transition: transform 0.2s ease-in-out;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .button-container button:hover {
+      transform: scale(1.1);
+    }
+    .button-container button img {
+      width: 40px;
+      height: 40px;
+      display: block;
+    }
+
+    .chart-container {
+      text-align: center;
+      margin-top: 20px;
+      margin-left: 10%;
+    }
+    .switch-button {
+      padding: 0; /* 取消按钮的内边距 */
+      border: none; /* 取消按钮的边框 */
+      background-color: transparent; /* 设置背景为透明 */
+      cursor: pointer; /* 设置光标为指针 */
+      position: absolute; /* 设置绝对定位 */
+      top: 130px; /* 距离顶部的距离 */
+      right: 10px; /* 距离右侧的距离 */
+    }
+
+    .switch-button img {
+      width: 40px; /* 设置图片的宽度 */
+      height: auto; /* 保持图片的高度自适应 */
+    }
+
+    #GardenChart{
+      position: absolute;
+      top:150px;
+    }
+    #DepartmentChart{
+      position: absolute;
+      top:150px;
+    }
+    .links-container {
+      bottom: 20px; /* 距离页面底部的距离 */
+      left: 50%; /* 水平居中 */
+      transform: translateX(0); /* 水平居中 */
+      text-align: center; /* 文本居中对齐 */
+      background-color: transparent; /* 背景色，可选 */
+      padding: 10px; /* 内边距，可选 */
+      border-radius: 5px; /* 圆角边框，可选 */
+      margin-top:400px;
+    }
+
+
+    .links-container a {
+      display: block;
+      text-decoration: none;
+      color: #3366cc;
+      margin-bottom: 10px;
+    }
+
+    .links-container a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+<div class="background"></div> <!-- 新添加的用于背景图片的 div -->
+
+<div class="container">
+
+  <div class="button-container">
+    <button><img th:src="@{/images/news.jpg}" alt="资讯">资讯</button>
+    <button onclick="location.href='http://localhost:8080/functionPage'"><img th:src="@{/images/service.jpg}" alt="服务" >服务</button>
+    <button onclick="showPersonalConsultationPage()"><img th:src="@{/images/personal.jpg}"alt="个人" >个人</button>
+    <button onclick="showEmailPage()"><img th:src="@{/images/email.jpg}" alt="邮箱" >邮箱</button>
+    <button onclick="location.href='http://localhost:8080/schoolBus/busMainPage'"><img th:src="@{/images/schoolcar.jpg}" alt="校车" >校车</button>
+  </div>
+  <div>
+     <button class="switch-button" onclick="SwitchChart()">
+        <img th:src="@{/images/change.png}" alt="切换">
+      </button>
+  </div>
+
+
+  <div>
+  </div>
+  <div class="chart-container" >
+  <div id="DepartmentChart"  style="width: 80%; height:300px"></div>
+  <div id="GardenChart"  style="width: 80%; height: 300px"></div>
+  </div>
+
+  <div class="links-container">
+    <div style="color: black; text-align: center; font-size: larger; display: none;" id="DepartmentChartTitle">学院报道情况</div>
+    <div style="color: black; text-align: center; font-size: larger; display: block;" id="GardenChartTitle">宿舍入住情况</div>
+    <hr>
+    <br>
+    <a href="http://www.people.com.cn/ "target="_blank">人民网</a><br>
+    <a href="https://my.cqu.edu.cn/workspace/home"target="_blank">重大教学</a><br>
+    <a href="https://www.icourse163.org/"target="_blank">慕课网</a><br>
+  </div>
+  <script>
+    function ResizeChart(){
+      DepChart.resize();
+      GarChart.resize();
+    }
+  </script>
+  <script>
+    console.log(localStorage.getItem('registerStudentEmail'))
+    function showEmailPage(){                            //跳转到邮箱功能
+      if(localStorage.getItem('registerStudentEmail')==='true'){
+        window.location.href='http://localhost:8080/schoolemail/loginPage'
+      }else{
+        window.location.href='http://localhost:8080/schoolemail/applyPage'
+      }
+    }
+
+    function showPersonalConsultationPage(){    //跳转到个人功能
+      window.location.href='http://localhost:8080/personalPage'
+    }
+
+    document.getElementById("DepartmentChart").style.display='none';      //设置图表的默认显示状态
+    document.getElementById("GardenChart").style.display='block';
+    const fetchRequest =new FormData();
+    var Computer;
+    var Mathematics;
+    var Philosophy;
+    var Electricity;
+    var Physics;
+    var Geography;
+    var Plumgarden;
+    var Bamboogarden;
+    var Orchidgarden;
+    var Pinegarden;
+    fetch("/getInfo",{    //向前端发送请求
+      method:"POST",
+      body: fetchRequest
+    })
+            .then(response=>response.json())
+            .then(data=>{
+              if(data['success']){
+                Computer=data['Computer']
+                Mathematics=data['Mathematics']
+                Philosophy=data['Philosophy']
+                Electricity=data['Electricity']
+                Physics=data['Physics']
+                Geography=data['Geography']
+                Plumgarden=data['Plumgarden']
+                Bamboogarden=data['Bamboogarden']
+                Orchidgarden=data['Orchidgarden']
+                Pinegarden=data['Pinegarden']
+                localStorage.setItem('Computer',Computer)                //将图表需要的数据存储在localStorage
+                localStorage.setItem('Mathematics',Mathematics)
+                localStorage.setItem('Philosophy',Philosophy)
+                localStorage.setItem('Electricity',Electricity)
+                localStorage.setItem('Physics',Physics)
+                localStorage.setItem('Geography',Geography)
+                localStorage.setItem('PlumGarden',Plumgarden)
+                localStorage.setItem('BambooGarden',Bamboogarden)
+                localStorage.setItem('OrchidGarden',Orchidgarden)
+                localStorage.setItem('PineGarden',Pinegarden)
+              }
+            })
+
+      function SwitchChart(){                   //切换两个图表以及title的显示状态
+          if(document.getElementById("DepartmentChart").style.display==='none'){
+            document.getElementById("DepartmentChart").style.display='block';
+            document.getElementById("GardenChart").style.display='none';
+            DepChart.resize();   //切换时对图表进行resize以适配页面大小
+            document.getElementById("DepartmentChartTitle").style.display='block';
+            document.getElementById("GardenChartTitle").style.display='none';
+          }else if(document.getElementById("DepartmentChart").style.display==='block'){
+            document.getElementById("DepartmentChart").style.display='none';
+            document.getElementById("GardenChart").style.display='block';
+            GarChart.resize()    //切换时对图表进行resize以适配页面大小
+            document.getElementById("DepartmentChartTitle").style.display='none';
+            document.getElementById("GardenChartTitle").style.display='block';
+          }
+      }
+
+
+  </script>
+  <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.1.0/echarts.min.js"></script>
+  <script>
+    const optionDe = {                //echarts的options
+      xAxis: {
+        type: 'category',
+        data: ['计算机学院', '数统学院', '哲学学院','电气工程学院','物理学院','地质工程学院']
+      },
+      yAxis: {
+        type: 'value'
+      },
+      series: [
+        {
+          data: [localStorage.getItem('Computer'),localStorage.getItem('Mathematics'),localStorage.getItem('Philosophy'),localStorage.getItem('Electricity'),localStorage.getItem('Physics'),localStorage.getItem('Geography')],
+          type: 'bar'
+        }
+      ]
+    };
+    var chartDom = document.getElementById('DepartmentChart');
+    var DepChart = echarts.init(chartDom);   //初始化图表对象
+    DepChart.setOption(optionDe);     //生成图表
+
+  </script>
+
+  <script>
+    const optionGar = {          //echarts的options
+      tooltip: {
+        trigger: 'item'
+      },
+      legend: {
+        top: '5%',
+        left: 'center'
+      },
+      series: [
+        {
+          name: 'Access From',
+          type: 'pie',
+          radius: ['40%', '70%'],
+          avoidLabelOverlap: false,
+          itemStyle: {
+            borderRadius: 10,
+            borderColor: '#fff',
+            borderWidth: 2
+          },
+          label: {
+            show: false,
+            position: 'center'
+          },
+          emphasis: {
+            label: {
+              show: true,
+              fontSize: 40,
+              fontWeight: 'bold'
+            }
+          },
+          labelLine: {
+            show: false
+          },
+          data: [
+            { value: localStorage.getItem('PlumGarden'), name: '梅园' },
+            { value: localStorage.getItem('BambooGarden'), name: '竹园' },
+            { value: localStorage.getItem('OrchidGarden'), name: '兰园' },
+            { value: localStorage.getItem('PineGarden'), name: '松园' }
+          ]
+        }
+      ]
+    };
+    var chartDom = document.getElementById('GardenChart');
+    var GarChart = echarts.init(chartDom);   //初始化图表对象
+    GarChart.setOption(optionGar);  //生成图表
+  </script>
+
+</div>
+
+</body>
+</html>
+
+

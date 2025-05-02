@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>查询教学班成绩</title>
+  <style>
+    body {
+      background-color: #f4f4f9;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      width: 80%;
+      max-width: 800px;
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+
+    .back-button {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      padding: 5px 10px;
+      background-color: #5599FF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .back-button:hover {
+      background-color: #99bbff;
+    }
+
+    .search-section {
+      margin-bottom: 20px;
+    }
+
+    .search-input {
+      padding: 10px;
+      width: calc(100% - 22px);
+      margin-right: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .search-button {
+      padding: 10px 20px;
+      background-color: #5599FF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .search-button:hover {
+      background-color: #99bbff;
+    }
+
+    .sort-buttons {
+      margin-bottom: 20px;
+    }
+
+    .sort-button {
+      padding: 10px 20px;
+      background-color: #5599FF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+
+    .sort-button:hover {
+      background-color: #99bbff;
+    }
+
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .results-table th,
+    .results-table td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+
+    .results-table th {
+      background-color: #f2f2f2;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <!-- 返回按钮 -->
+  <button id="backButton" class="back-button">返回</button>
+
+  <h1>查询教学班成绩</h1>
+
+  <!-- 搜索部分 -->
+  <div class="search-section">
+    <input type="text" id="classroomIdInput" class="search-input" placeholder="请输入教学班号">
+    <button id="searchButton" class="search-button">搜索</button>
+  </div>
+
+  <!-- 排序按钮 -->
+  <div class="sort-buttons">
+    <button id="sortByTotal" class="sort-button">按总分排序</button>
+    <button id="sortByStudentId" class="sort-button">按学生ID排序</button>
+  </div>
+
+  <!-- 结果展示部分 -->
+  <div id="infoSection" style="margin-top: 20px;"></div>
+
+  <!-- 学生成绩表格 -->
+  <table id="resultsTable" class="results-table" style="display: none;">
+    <thead>
+    <tr>
+      <th>学生ID</th>
+      <th>学生姓名</th>
+      <th>平时分</th>
+      <th>期中分</th>
+      <th>实验分</th>
+      <th>期末分</th>
+      <th>总分</th>
+    </tr>
+    </thead>
+    <tbody id="resultsBody">
+    <!-- 数据将插入到这里 -->
+    </tbody>
+  </table>
+</div>
+
+<script>
+  // 监听返回按钮的点击事件
+  document.getElementById('backButton').addEventListener('click', function() {
+    window.location.href = '/adminSystem/adminDashboard';
+  });
+
+  // 监听搜索按钮的点击事件
+  document.getElementById('searchButton').addEventListener('click', function() {
+    const classroomId = document.getElementById('classroomIdInput').value;
+    if (!classroomId) {
+      alert('请输入教学班号');
+      return;
+    }
+
+    fetch(`/adminSystem/searchGradesOfClassroom`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: `classroomid=${encodeURIComponent(classroomId)}`
+    })
+            .then(response => response.json())
+            .then(data => {
+              if (data.error) {
+                alert(data.error);
+                return;
+              }
+
+              // 显示课程和老师信息
+              const infoSection = document.getElementById('infoSection');
+              infoSection.innerHTML = `
+          <p><strong>课程名称:</strong> ${data.classname}</p>
+          <p><strong>教师姓名:</strong> ${data.teachername}</p>
+        `;
+
+              // 清空现有结果
+              const resultsBody = document.getElementById('resultsBody');
+              resultsBody.innerHTML = '';
+
+              // 显示学生信息和成绩
+              data.students.forEach(student => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+            <td>${student.studentid}</td>
+            <td>${student.studentname}</td>
+            <td>${student.regular}</td>
+            <td>${student.midterm}</td>
+            <td>${student.lab}</td>
+            <td>${student.end}</td>
+            <td>${student.total}</td>
+          `;
+                resultsBody.appendChild(row);
+              });
+
+              // 显示表格
+              document.getElementById('resultsTable').style.display = 'table';
+
+              // 添加排序功能
+              addSortFunctionality(data.students);
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              alert('发生错误，请重试');
+            });
+  });
+
+  // 添加排序功能
+  function addSortFunctionality(students) {
+    const sortByTotalButton = document.getElementById('sortByTotal');
+    const sortByStudentIdButton = document.getElementById('sortByStudentId');
+
+    sortByTotalButton.addEventListener('click', () => {
+      sortStudents(students, (a, b) => b.total - a.total);
+    });
+
+    sortByStudentIdButton.addEventListener('click', () => {
+      sortStudents(students, (a, b) => a.studentid - b.studentid);
+    });
+  }
+
+  // 排序函数
+  function sortStudents(students, compareFn) {
+    students.sort(compareFn);
+
+    const resultsBody = document.getElementById('resultsBody');
+    resultsBody.innerHTML = '';
+
+    students.forEach(student => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${student.studentid}</td>
+        <td>${student.studentname}</td>
+        <td>${student.regular}</td>
+        <td>${student.midterm}</td>
+        <td>${student.lab}</td>
+        <td>${student.end}</td>
+        <td>${student.total}</td>
+      `;
+      resultsBody.appendChild(row);
+    });
+  }
+</script>
+</body>
+</html>
+
+
+

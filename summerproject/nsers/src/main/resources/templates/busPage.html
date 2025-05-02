@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th= "https://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>校车时刻表</title>
+  <style>
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+      background-color: white;
+    }
+
+    .header {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      background-color: #add8e6;
+      position: relative;
+    }
+
+    .back-button {
+      position: absolute;
+      left: 10px;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    .title {
+      font-size: 24px;
+      color: white;
+      margin: 0 auto;
+      text-align: center;
+      flex: 1;
+    }
+
+    .image-gallery {
+      text-align: left;
+      width: 100%;
+      padding: 20px;
+    }
+
+    .image-container {
+      display: inline-block;
+      margin: 10px;
+    }
+
+    .image-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .current-time {
+      font-family: Arial, sans-serif;
+      font-size: 25px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .departure-times {
+      font-family: Times New Roman, serif;
+      font-size: 17.5px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .button {
+      margin: 10px;
+      padding: 15px 30px;
+      background-color: #007aff;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      font-size: 18px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+
+    .button:hover {
+      background-color: #005bb5;
+      transform: scale(1.05);
+    }
+
+    .button:active {
+      transform: scale(0.95);
+    }
+
+    .button:focus {
+      box-shadow: 0 0 10px rgba(0, 122, 255, 0.7);
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <button onclick="goBack()" class="back-button">←</button>
+    <div class="title">校车时刻表</div>
+  </div>
+  <div class="image-gallery">
+    <div class="image-container">
+      <img th:src="@{/images/schoolbus1.jpg}" alt="示例图片">
+    </div>
+    <p class="current-time" id="current-time"></p>
+    <p class="departure-times">如果您想从沙坪坝校区乘车前往虎溪校区，下面为各始发点最近四班车的发车时间以及校车时刻表：</p>
+    <p id="nearest-departure-times-a" class="departure-times"></p>
+    <p id="nearest-departure-times-b" class="departure-times"></p>
+    <p id="nearest-departure-times-c" class="departure-times"></p>
+    <p id="nearest-departure-times-d" class="departure-times"></p>
+    <div class="image-container">
+      <img th:src="@{/images/schoolbus2.jpg}" alt="示例图片">
+    </div>
+    <p class="departure-times">如果您想从虎溪校区乘车前往沙坪坝校区，下面为各始发点最近四班车的发车时间以及校车时刻表：</p>
+    <p id="nearest-departure-times-e" class="departure-times"></p>
+    <p id="nearest-departure-times-f" class="departure-times"></p>
+    <p id="nearest-departure-times-g" class="departure-times"></p>
+    <p id="nearest-departure-times-h" class="departure-times"></p>
+    <div class="image-container">
+      <img th:src="@{/images/schoolbus3.jpg}" alt="示例图片">
+    </div>
+    <div class="image-container">
+      <img th:src="@{/images/schoolbus4.jpg}" alt="示例图片">
+    </div>
+  </div>
+</div>
+<script>
+  const departureTimes = {
+    A: ['7:20', '8:10', '9:10', '10:00', '10:30', '11:30', '12:20', '13:10', '14:00', '14:45', '15:20', '16:20', '17:20', '17:50', '18:20', '19:30', '20:30', '21:00', '21:50'],
+    B: ['7:25', '8:15', '9:15', '10:05', '10:35', '11:35', '12:25', '13:15', '14:05', '14:50', '15:25', '16:25', '17:25', '17:55', '18:25', '19:35', '20:35', '21:05', '21:55'],
+    C: ['7:25', '8:20', '9:20', '10:10', '10:40', '11:40', '12:30', '13:20', '14:10', '14:55', '15:30', '16:30', '17:30', '18:00', '18:30', '19:40', '20:40', '21:10', '22:00'],
+    D: ['7:35', '8:30', '9:30', '10:20', '10:50', '11:50', '12:40', '13:30', '14:20', '15:05', '15:40', '16:40', '17:40', '18:10', '18:40', '19:50', '20:50', '21:20', '22:10'],
+    E: ['7:10', '8:20', '9:20', '10:00', '10:30', '11:30', '12:20', '13:20', '14:00', '14:45', '15:30', '16:20', '17:20', '17:50', '18:30', '19:45', '20:30', '21:00', '21:50'],
+    F: ['7:00', '8:10', '9:10', '13:10', '15:20', '18:20', '19:30'],
+    G: ['7:02', '8:12', '9:12', '13:12', '15:22', '18:22', '19:32'],
+    H: ['12:10', '17:10', '19:40']
+  };
+
+  function getCurrentTime() {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    document.getElementById('current-time').innerText = `当前时间：${hours}:${minutes}:${seconds}`;
+  }
+
+  function getNearestDepartureTimes() {
+    const now = new Date().getTime();
+    const points = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+
+    points.forEach(point => {
+      let nearestTimes = [];
+      departureTimes[point].forEach(time => {
+        const [hours, minutes] = time.split(':');
+        const departureTime = new Date().setHours(hours, minutes);
+        const diff = departureTime - now;
+        if (diff > 0 && nearestTimes.length < 4) {
+          nearestTimes.push(time);
+        }
+      });
+
+      const element = document.getElementById(`nearest-departure-times-${point.toLowerCase()}`);
+      if (nearestTimes.length === 0) {
+        element.innerText = `${point}区后门 ：今天该点已无校车`;
+      } else {
+        element.innerText = `${point}区后门 ：${nearestTimes.join(', ')}`;
+      }
+    });
+  }
+
+  function goBack() {
+    window.location.href = 'http://localhost:8080/schoolBus/busMainPage';
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    getCurrentTime();
+    getNearestDepartureTimes();
+    setInterval(() => {
+      getCurrentTime();
+    }, 1000);
+  });
+</script>
+</body>
+</html>

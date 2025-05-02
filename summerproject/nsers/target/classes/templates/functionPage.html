@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th= "https://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>功能</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f2f2f2;
+    }
+    .background {
+      background-image: url('/images/background.jpg');
+      background-size: cover;
+      background-position: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: transparent;
+      border-radius: 10px;
+      position: relative;
+      text-align: center;
+    }
+    .header {
+      background-color: #f2f2f2;
+      text-align: center;
+      padding: 10px;
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+    }
+    .button-container {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px;
+      background-color: white;
+      flex-wrap: wrap;
+      border-bottom-left-radius: 10px;
+      border-bottom-right-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .button-container button {
+      padding: 15px;
+      border: none;
+      background-color: transparent;
+      cursor: pointer;
+      transition: transform 0.2s ease-in-out;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .button-container button:hover {
+      transform: scale(1.1);
+    }
+    .button-container button img {
+      width: 40px;
+      height: 40px;
+      display: block;
+    }
+    .button-container button span {
+      margin-top: 5px;
+      font-size: 14px;
+    }
+    .button-container button.color {
+      background-color: transparent;
+    }
+    .new-buttons {
+      display: flex;
+      justify-content: center;
+      margin-top: 10px;
+    }
+    .new-buttons button {
+      padding: 20px;
+      margin: 0 10px;
+      border: none;
+      background-color: transparent;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .new-buttons button:hover {
+      background-color: #e0e0e0;
+    }
+    .new-buttons button img {
+      width: 60px;
+      height: 60px;
+      display: block;
+    }
+    .new-buttons button span {
+      margin-top: 5px;
+      font-size: 12px;
+    }
+    .course-buttons {
+      display: none;
+      justify-content: center;
+      margin-top: 10px;
+    }
+    .course-buttons button {
+      padding: 20px;
+      margin: 0 10px;
+      border: none;
+      background-color: transparent;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .course-buttons button:hover {
+      background-color: #e0e0e0;
+    }
+    .course-buttons button img {
+      width: 60px;
+      height: 60px;
+      display: block;
+    }
+    .course-buttons button span {
+      margin-top: 5px;
+      font-size: 12px;
+    }
+    .active {
+      border: 2px solid red;
+    }
+    .chart {
+      display: none;
+      margin-top: 20px;
+    }
+    .form-container {
+      display: none;
+      margin-top: 20px;
+      text-align: left;
+    }
+    .form-container label {
+      display: block;
+      margin-bottom: 10px;
+    }
+    .form-container input {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+    }
+    .form-container button {
+      width: 100%;
+      padding: 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .form-container button:hover {
+      background-color: #45a049;
+    }
+    .dormitoryTable {
+      width: 80%;
+      margin: 20px auto;
+      border-collapse: collapse;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    }
+    #dormitoryTable {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    #dormitoryTable th, #dormitoryTable td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    #dormitoryTable th {
+      background-color: #f2f2f2;
+      color: #333;
+      font-weight: bold;
+    }
+    #dormitoryTable tr:hover {
+      background-color: #f5f5f5;
+    }
+    #dormitoryTable td {
+      background-color: #ffffff;
+    }
+    .dormitoryTable tr:nth-child(even) td {
+      background-color: #f9f9f9;
+    }
+    .culture-buttons {
+      display: none;
+      justify-content: center;
+      margin-top: 10px;
+    }
+    .culture-buttons button {
+      padding: 20px;
+      margin: 0 10px;
+      border: none;
+      background-color: transparent;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .culture-buttons button:hover {
+      background-color: #e0e0e0;
+    }
+    .culture-buttons button img {
+      width: 60px;
+      height: 60px;
+      display: block;
+    }
+    .culture-buttons button span {
+      margin-top: 5px;
+      font-size: 12px;
+    }
+    .history-buttons {
+      display: none;
+      justify-content: center;
+      margin-top: 10px;
+    }
+    .history-buttons button {
+      padding: 20px;
+      margin: 0 10px;
+      border: none;
+      background-color: transparent;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .history-buttons button:hover {
+      background-color: #e0e0e0;
+    }
+    .history-buttons button img {
+      width: 60px;
+      height: 60px;
+      display: block;
+    }
+    .history-buttons button span {
+      margin-top: 5px;
+      font-size: 12px;
+    }
+    .event-image, .person-image {
+      display: none;
+      width: 100%;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+<div class="background"></div>
+
+<div class="container">
+
+  <div class="button-container" id="button-container">
+    <button class="main-button" onclick="showNewsPage()"><img src="./images/news.jpg" alt="资讯"><span>资讯</span></button>
+    <button class="main-button color"><img src="./images/service.jpg" alt="服务"><span>服务</span></button>
+    <button class="main-button" onclick="showPersonalPage()"><img src="./images/personal.jpg" alt="个人"><span>个人</span></button>
+    <button class="main-button" onclick="showEmailPage()"><img src="./images/email.jpg" alt="邮箱"><span>邮箱</span></button>
+    <button class="main-button" onclick="location.href='http://localhost:8080/schoolBus/busMainPage'"><img src="./images/schoolcar.jpg" alt="校车"><span>校车</span></button>
+  </div>
+
+  <div class="new-buttons">
+    <button class="dorm-button" id="dorm-button" onclick="showDomitory()"><img src="/images/domitory.png" alt="宿舍"><span>宿舍</span></button>
+    <button class="main-button" id="course-button"><img src="/images/course.png" alt="课程"><span>课程</span></button>
+    <button class="main-button" id="culture-button"><img src="/images/culture.png" alt="文化"><span>文化</span></button>
+  </div>
+
+  <div class="course-buttons" id="course-buttons">
+    <button id="inquire-button" onclick="location.href='http://localhost:8080/functionPage/showCoursePage'"><img src="/images/inquire.png" alt="查询"><span>查询</span></button>
+    <button id="apply-button" onclick="location.href='http://localhost:8080/functionPage/selectCoursePage'"><img src="/images/choosecourse.png" alt="选课"><span>选课</span></button>
+  </div>
+
+  <div class="dormitoryTable" style="display: none" id="dormitoryTableContainer">
+    <table id="dormitoryTable">
+      <tr>
+        <th>姓名</th>
+        <th>园区</th>
+        <th>楼栋</th>
+        <th>宿舍号</th>
+      </tr>
+      <tr>
+        <td id="Name1">姓名1</td>
+        <td class="Garden">园区</td>
+        <td class="Number">楼栋</td>
+        <td class="Room">宿舍号</td>
+      </tr>
+      <tr>
+        <td id="Name2">姓名2</td>
+        <td class="Garden">园区</td>
+        <td class="Number">楼栋</td>
+        <td class="Room">宿舍号</td>
+      </tr>
+      <tr>
+        <td id="Name3">姓名3</td>
+        <td class="Garden">园区</td>
+        <td class="Number">楼栋</td>
+        <td class="Room">宿舍号</td>
+      </tr>
+      <tr>
+        <td id="Name4">姓名4</td>
+        <td class="Garden">园区</td>
+        <td class="Number">楼栋</td>
+        <td class="Room">宿舍号</td>
+      </tr>
+    </table>
+  </div>
+
+
+
+
+  <div class="culture-buttons" id="culture-buttons">
+    <button id="faculty-button"><img src="./images/teacher.png" alt="师资"><span>师资</span></button>
+    <button id="facility-button"><img src="./images/facility.png" alt="设施"><span>设施</span></button>
+    <button id="history-button"><img src="./images/schoolhist.png" alt="校史"><span>校史</span></button>
+  </div>
+
+  <div class="history-buttons" id="history-buttons">
+    <button id="event-button"><img src="./images/matters.png" alt="事项"><span>事项</span></button>
+    <button id="person-button"><img src="/images/calendar.png" alt="校历"><span>校历</span></button>
+  </div>
+
+
+</div>
+
+</div>
+
+<script>
+  function showEmailPage(){     //跳转到邮箱功能
+    console.log(localStorage.getItem('registerStudentEmail'))
+    if(localStorage.getItem('registerStudentEmail')==='true'){
+      window.location.href='http://localhost:8080/schoolemail/loginPage'
+    }else{
+      window.location.href='http://localhost:8080/schoolemail/applyPage'
+    }
+  }
+
+  function showNewsPage(){    //跳转到主界面
+    window.location.href='http://localhost:8080/newsPage'
+  }
+
+  function showPersonalPage(){   //跳转到个人界面
+    window.location.href='http://localhost:8080/personalPage'
+  }
+
+  document.getElementById("course-button").addEventListener("click", function() {     //点击课程时切换其他button的显示状态
+    this.classList.toggle("active");
+    var dormButtons = document.getElementById("course-buttons");
+    if (this.classList.contains("active")) {
+      dormButtons.style.display = "flex";
+    } else {
+      dormButtons.style.display = "none";
+    }
+    document.getElementById('dormitoryTableContainer').style.display='none'
+  });
+
+  document.getElementById("inquire-button").addEventListener("click", function() {   //点击查课按钮时切换其他button的显示状态
+    document.getElementById("course-buttons").style.display = "none";
+    document.getElementById("chart").style.display = "block";
+    document.getElementById("form-container").style.display = "none";
+    document.getElementById('dormitoryTableContainer').style.display='none'
+  });
+
+  document.getElementById("apply-button").addEventListener("click", function() {     //点击选课按钮时切换其他button的显示状态
+    document.getElementById("course-buttons").style.display = "none";
+    document.getElementById("form-container").style.display = "block";
+    document.getElementById("chart").style.display = "none";
+    document.getElementById('dormitoryTableContainer').style.display='none'
+  });
+
+  document.querySelectorAll(".main-button").forEach(function(button) {     //点击主功能按钮时切换其他表格的显示状态
+    button.addEventListener("click", function() {
+      document.getElementById("chart").style.display = "none";
+      document.getElementById("form-container").style.display = "none";
+      document.getElementById('dormitoryTableContainer').style.display='none';
+    });
+  });
+  document.querySelectorAll(".dorm-button").forEach(function(button) {    //点击宿舍按钮
+    button.addEventListener("click", function() {
+      document.getElementById("chart").style.display = "none";
+      document.getElementById("form-container").style.display = "none";
+    });
+  });
+
+  function showDomitory(){       //显示宿舍图表
+    const sidSend=localStorage.getItem('studentid')
+    const sidPack=new FormData();
+    sidPack.append('sid',sidSend)
+    fetch("/functionPage/getRoommate",{
+      method:"POST",
+      body: sidPack
+    })
+            .then(response=>response.json())
+            .then(data=>{
+                if(data['success']){
+                  const dormitory=data['dormitory'];
+                  const roommate=data['roommate'];
+                  var table=document.getElementById('dormitoryTable')
+                  var count=0;
+                  for(let i=1;i<5;i++){
+                    table.rows[i].cells[0].innerHTML=roommate[count].sname     //在table中填入数值
+                    table.rows[i].cells[1].innerHTML=dormitory.dormitoryGarden
+                    table.rows[i].cells[2].innerHTML=dormitory.dormitoryNumber
+                    table.rows[i].cells[3].innerHTML=dormitory.dormitoryRoom
+                    count++
+                  }
+
+                }
+            })
+    document.getElementById('dormitoryTableContainer').style.display='block'     //切换其他主按钮下功能模块的显示状态
+    document.getElementById('course-buttons').style.display='none'
+    document.getElementById('culture-buttons').style.display='none'
+    document.getElementById('history-buttons').style.display='none'
+
+
+  }
+  document.getElementById("culture-button").addEventListener("click", function() {      //按下文化按钮时切换主按钮下功能模块的显示状态
+    var cultureButtons = document.getElementById("culture-buttons");
+    cultureButtons.style.display = cultureButtons.style.display === "flex" ? "none" : "flex";
+    document.getElementById('course-buttons').style.display='none'
+    document.getElementById('dormitoryTableContainer').style.display='none'
+  });
+
+  document.querySelectorAll(".main-button").forEach(function(button) {      //按下非文化按钮时使文化按钮下的子按钮消失
+    button.addEventListener("click", function() {
+      if (this.id !== "culture-button") {
+        document.getElementById("culture-buttons").style.display = "none";
+        document.getElementById("history-buttons").style.display = "none";
+        document.getElementById("event-image").style.display = "none";
+        document.getElementById("person-image").style.display = "none";
+      }
+    });
+  });
+
+  document.getElementById("history-button").addEventListener("click", function() {      //按下历史按钮时切换历史按钮的子模块的的显示状态
+    var historyButtons = document.getElementById("history-buttons");
+    historyButtons.style.display = historyButtons.style.display === "flex" ? "none" : "flex";
+  });
+
+  document.querySelectorAll(".culture-buttons button").forEach(function(button) {   //按下非历史按钮时令其他文化按钮的子模块内容消失
+    button.addEventListener("click", function() {
+      if (this.id !== "history-button") {
+        document.getElementById("history-buttons").style.display = "none";
+      }
+    });
+  });
+
+
+  document.getElementById("event-button").addEventListener("click", function() {     //事项按钮按下时其他模块的消失效果
+    document.getElementById("culture-buttons").style.display = "none";
+    document.getElementById("history-buttons").style.display = "none";
+    document.getElementById("event-image").style.display = "block";
+    document.getElementById("person-image").style.display = "none";
+  });
+
+  document.getElementById("person-button").addEventListener("click", function() {   //人文按钮按下时其他模块的消失效果
+    document.getElementById("culture-buttons").style.display = "none";
+    document.getElementById("history-buttons").style.display = "none";
+    document.getElementById("event-image").style.display = "none";
+    document.getElementById("person-image").style.display = "block";
+  });
+
+  document.getElementById("faculty-button").addEventListener("click", function() {
+    window.location.href = "http://localhost:8080/functionPage/teacherPage"; // 跳转至师资
+  });
+
+  document.getElementById("facility-button").addEventListener("click", function() {
+    window.location.href = "http://localhost:8080/functionPage/facilityPage"; // 跳转至设施
+  });
+  document.getElementById("event-button").addEventListener("click", function() {
+    window.open ( "http://localhost:8080/functionPage/mattersPage","_blank"); // 跳转至事项
+  });
+
+  document.getElementById("person-button").addEventListener("click", function() {
+    window.open ("http://localhost:8080/functionPage/calendPage","_blank"); // 跳转至校历
+  });
+</script>
+</body>
+</html>

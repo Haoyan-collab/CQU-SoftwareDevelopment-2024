@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模板</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: transparent;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('/images/background.jpg'); /* 添加背景图 */
+            background-size: cover; /* 背景图覆盖整个页面 */
+            background-position: center; /* 背景图居中显示 */
+            z-index: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            position: relative;
+            text-align: center; /* 让按钮居中 */
+            z-index: 1; /* 确保容器在背景图片之上 */
+        }
+        .exit-button {
+            background-color: red;
+            color: white; /* 改为白色，增加对比度 */
+            padding: 10px 20px; /* 增加左右padding */
+            border: none;
+            border-radius: 8px; /* 更圆滑的边角 */
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 20px; /* 调整字体大小 */
+            position: fixed;
+            bottom: 20px; /* 距离底部20px */
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 添加阴影，增加立体感 */
+            transition: background-color 0.3s, box-shadow 0.3s; /* 增加过渡效果 */
+        }
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: white;
+            flex-wrap: wrap;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+
+        }
+        .button-container button {
+            padding: 15px;
+            border: none;
+            background-color: transparent;
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .button-container button:hover {
+            transform: scale(1.1);
+        }
+        .button-container button img {
+            width: 40px;
+            height: 40px;
+            display: block;
+        }
+        .button-container button span {
+            margin-top: 5px;
+            font-size: 14px;
+        }
+        .button-container button.red {
+            background-color: #ff0000;
+        }
+        .table-container {
+            display: none;
+            margin-top: 20px;
+            text-align: left;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .pagination {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .pagination button {
+            padding: 5px 10px;
+            margin: 0 5px;
+            border: 1px solid #ddd;
+            background-color: #fff;
+            cursor: pointer;
+        }
+        .pagination button:hover {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+
+<body>
+<div class="background"></div>
+<button class="exit-button" onclick="exitbutton()" id="exit-button">登出</button>
+<div class="container">
+    <div class="button-container">
+        <button id="manageClassButton"><img src="/images/news.jpg" alt="管理课堂">管理课堂</button>
+        <button><img src="/images/service.jpg" >待</button>
+        <button><img src="/images/personal.jpg">开</button>
+        <button><img src="/images/email.jpg" >发</button>
+
+    </div>
+
+    <div class="table-container" id="tableContainer">
+        <h2>您的授课信息</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>课程名</th>
+<!--                <th>上课地点</th>-->
+                <th>上课时间</th>
+            </tr>
+            </thead>
+            <tbody id="courseTable">
+            <!-- 动态数据将插入到这里 -->
+            </tbody>
+        </table>
+        <div class="pagination">
+            <button id="prevPage">上一页</button>
+            <button id="nextPage">下一页</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    setTimeout(() => {
+        renderTable(1); // 假设我们显示第一页的数据
+    }, 10);
+
+    function exitbutton() {
+        window.location.href = 'http://localhost:8080/startPage';
+        localStorage.clear();
+    }
+    const rowsPerPage = 6;
+    let currentPage = 1;
+    let Data = [];
+    let tidPack=new FormData()
+    tidPack.append('tid',localStorage.getItem('teacherid'))
+    fetch("/teacherSystem/showYourCourse",{
+        method:'POST',
+        body:tidPack
+    })
+        .then(response=>response.json())
+        .then(data=>{
+            const courses=data['CourseAndStudent']
+            for(let key in courses){
+                let courseInfo=courses[key]
+                Data.push({'course':courseInfo[0],'location':courseInfo[1],'time':courseInfo[2],'name':courseInfo[3]})
+            }
+        });
+
+</script>
+<script>
+    function renderTable(page) {
+        const table = document.getElementById('courseTable');
+        table.innerHTML = '';
+        const start = (page - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        const pageData = Data.slice(start, end);
+
+        for (const row of pageData) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><button class="course-link" onclick="showCourseStudentList('${row.course}', '${row.name}')" id="${row.course}" style='border:none;background-color:#ffffff;color:#261d92;' ><u>${row.name}</u></button></td>
+                <td>${row.time}</td>
+            `;
+            table.appendChild(tr);
+        }
+    }
+
+
+
+    function showCourseStudentList(cid,name){
+        localStorage.setItem('pickCourseStudentList',cid)
+        localStorage.setItem('classname',name)
+        window.location.href='http://localhost:8080/teacherSystem/teacherCoursePage'
+    }
+
+    document.getElementById('prevPage').addEventListener('click', () => {
+        if (currentPage > 1) {
+            currentPage--;
+            renderTable(currentPage);
+        }
+    });
+
+    document.getElementById('nextPage').addEventListener('click', () => {
+        if (currentPage * rowsPerPage < Data.length) {
+            currentPage++;
+            renderTable(currentPage);
+        }
+    });
+
+    document.getElementById('manageClassButton').addEventListener('click', function() {
+        var tableContainer = document.getElementById('tableContainer');
+        tableContainer.style.display = tableContainer.style.display === 'none' || tableContainer.style.display === '' ? 'block' : 'none';
+        if (tableContainer.style.display === 'block') {
+            renderTable(currentPage); // 加载当前页的数据
+        }
+    });
+
+    renderTable(currentPage); // 初始化加载第一页的数据
+
+</script>
+</body>
+</html>

@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>教师课程详情</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f2f2f2;
+    }
+    .background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('/images/background.jpg');
+      background-size: cover;
+      background-position: center;
+      z-index: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      position: relative;
+    }
+    .table-container {
+      margin-top: 20px;
+      text-align: left;
+      position: relative;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    .pagination {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .pagination button {
+      padding: 5px 10px;
+      margin: 0 5px;
+      border: 1px solid #ddd;
+      background-color: #fff;
+      cursor: pointer;
+    }
+    .pagination button:hover {
+      background-color: #f2f2f2;
+    }
+    .top-left-button {
+      position: absolute;
+      top: -30px;
+      left: 0;
+      padding: 5px 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .top-left-button:hover {
+      background-color: #45a049;
+    }
+    .title-row {
+      text-align: center;
+      font-weight: bold;
+      font-size: 18px;
+    }
+    .save-button {
+      position: absolute;
+      top: -30px;
+      right: 0;
+      padding: 5px 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .save-button:hover {
+      background-color: #45a049;
+    }
+
+    /* CSS */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      position: relative; /* 确保内部绝对定位元素基于此容器 */
+    }
+
+    .top-left-button, .save-button {
+      position: static; /* 移除绝对定位 */
+      padding: 5px 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .sort-buttons {
+      display: flex;
+      margin-left: auto; /* 推向右侧 */
+    }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.4);
+    }
+    .modal-content {
+      background-color: #fefefe;
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 300px;
+      text-align: center;
+    }
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+    .close:hover,
+    .close:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .modal input[type="number"] {
+      width: 100%;
+      padding: 8px;
+      margin: 5px 0;
+      box-sizing: border-box;
+    }
+    .modal button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .modal button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+<div class="background"></div>
+<div class="container">
+  <div class="table-container">
+    <!-- 工具栏 -->
+    <div class="toolbar">
+      <button class="top-left-button">← 返回</button>
+      <div class="sort-buttons">
+        <button class="top-left-button">按学生ID排序</button>
+        <button class="top-left-button">按总成绩排序</button>
+      </div>
+      <button class="save-button">保存成绩</button>
+      <button id="batchAssignButton" class="save-button">批量分配成绩</button>
+    </div>
+    <table>
+      <thead>
+      <tr>
+        <th colspan="7" class="title-row" id="teacherName">{课程}学生信息表</th>
+      </tr>
+      <tr>
+        <th>学生学号</th>
+        <th>学生姓名</th>
+        <th>平时成绩</th>
+        <th>期中成绩</th>
+        <th>实验成绩</th>
+        <th>期末成绩</th>
+        <th>总成绩</th>
+      </tr>
+      </thead>
+      <tbody id="studentTable">
+      <!-- 动态数据将插入到这里 -->
+      </tbody>
+    </table>
+    <div class="pagination">
+      <button id="prevPage">上一页</button>
+      <button id="nextPage">下一页</button>
+    </div>
+  </div>
+</div>
+
+<!-- The Modal -->
+<div id="myModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h2>批量分配成绩</h2>
+    <input type="number" id="regular" placeholder="平时成绩" required>
+    <input type="number" id="midterm" placeholder="期中成绩" required>
+    <input type="number" id="lab" placeholder="实验成绩" required>
+    <input type="number" id="end" placeholder="期末成绩" required>
+    <button id="allocateGradesBtn">确定</button>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', (event) => {
+    const rowsPerPage = 10;
+    let currentPage = 1;
+    let Data = [];
+
+    // 获取教师和课程名称
+    const tname = localStorage.getItem('teachername');
+    const cname = localStorage.getItem('classname');
+
+    if (!tname || !cname) {
+      console.error('Teacher name or course name not found in localStorage.');
+      alert('无法获取教师或课程信息，请重新登录或刷新页面。');
+      return;
+    }
+
+    // 准备发送给服务器的数据包
+    const CnameTnamePack = new FormData();
+    CnameTnamePack.append('tname', tname);
+    CnameTnamePack.append('cname', cname);
+
+    // 从服务器获取所有学生信息
+    fetch("/teacherSystem/showYourStudent", {
+      method: 'POST',
+      body: CnameTnamePack
+    })
+            .then(response => response.json())
+            .then(data => {
+              if (data['success']) {
+                Data = data['Info'];
+                console.log("Fetched Data:", Data);
+
+                // 设置课程名称标题
+                document.getElementById('teacherName').textContent = `${cname}学生信息表`;
+
+                // 初始化渲染第一页的数据
+                renderTable(currentPage);
+              } else {
+                console.error('Failed to fetch student data:', data);
+                alert('无法获取学生信息，请稍后再试。');
+              }
+            })
+            .catch(error => {
+              console.error('Error fetching student data:', error);
+              alert('网络错误，请稍后再试。');
+            });
+
+    function renderTable(page) {
+      const table = document.getElementById('studentTable');
+      table.innerHTML = '';
+      const start = (page - 1) * rowsPerPage;
+      const end = Math.min(start + rowsPerPage, Data.length); // 确保不会超出数组长度
+      const pageData = Data.slice(start, end);
+
+      for (const studentInfo of pageData) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+        <td>${studentInfo[0]}</td>
+        <td>${studentInfo[1]}</td>
+        <td><input type="number" class="grade-input" data-type="regular" data-studentid="${studentInfo[0]}" value="${studentInfo[2] !== null ? studentInfo[2] : ''}"></td>
+        <td><input type="number" class="grade-input" data-type="midterm" data-studentid="${studentInfo[0]}" value="${studentInfo[3] !== null ? studentInfo[3] : ''}"></td>
+        <td><input type="number" class="grade-input" data-type="lab" data-studentid="${studentInfo[0]}" value="${studentInfo[4] !== null ? studentInfo[4] : ''}"></td>
+        <td><input type="number" class="grade-input" data-type="end" data-studentid="${studentInfo[0]}" value="${studentInfo[5] !== null ? studentInfo[5] : ''}"></td>
+        <td id="total-${studentInfo[0]}">${studentInfo[6] !== null ? studentInfo[6] : '—'}</td>
+      `;
+        table.appendChild(tr);
+      }
+    }
+
+    // 打开模态框
+    const modal = document.getElementById("myModal");
+    const batchAssignButton = document.getElementById("batchAssignButton");
+    const span = document.getElementsByClassName("close")[0];
+
+    batchAssignButton.onclick = function() {
+      modal.style.display = "block";
+    }
+
+    span.onclick = function() {
+      modal.style.display = "none";
+    }
+
+    window.onclick = function(event) {
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    }
+
+    // 为保存成绩按钮添加点击事件监听器
+    document.querySelector('.save-button:not(#batchAssignButton)').addEventListener('click', saveGrades);
+
+    // 对于排序按钮，通过JS添加事件监听器
+    document.querySelector('.sort-buttons .top-left-button:nth-child(1)').addEventListener('click', sortById);
+    document.querySelector('.sort-buttons .top-left-button:nth-child(2)').addEventListener('click', sortByTotal);
+
+    // 添加分页按钮的事件监听器
+    document.getElementById('prevPage').addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        renderTable(currentPage);
+      }
+    });
+
+    document.getElementById('nextPage').addEventListener('click', () => {
+      if (currentPage * rowsPerPage < Data.length) {
+        currentPage++;
+        renderTable(currentPage);
+      }
+    });
+
+    function saveGrades() {
+      const gradeData = [];
+      document.querySelectorAll('.grade-input').forEach(input => {
+        const studentId = input.dataset.studentid;
+        const type = input.dataset.type;
+        const value = parseInt(input.value);
+        if (!isNaN(value)) { // 确保值是有效的数字
+          gradeData.push({ sid: studentId, type: type, value: value, tname, cname });
+        }
+      });
+
+      updateGrades(gradeData);
+    }
+
+    function updateGrades(gradeData) {
+      fetch("/teacherSystem/updateGrades", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(gradeData),
+      })
+              .then(response => response.json())
+              .then(data => {
+                if (data.success) {
+                  console.log('Grades updated successfully');
+                  alert('成绩更新成功');
+                  location.reload(); // 重新加载页面以更新成绩
+                } else {
+                  console.error('Failed to update grades');
+                  alert('成绩更新失败');
+                }
+              })
+              .catch(error => {
+                console.error('Error updating grades:', error);
+                alert('网络错误，请稍后再试');
+              });
+    }
+
+    // 批量分配成绩逻辑
+    document.getElementById('allocateGradesBtn').addEventListener('click', function() {
+      const regular = document.getElementById('regular').value.trim();
+      const midterm = document.getElementById('midterm').value.trim();
+      const lab = document.getElementById('lab').value.trim();
+      const end = document.getElementById('end').value.trim();
+
+      if (regular && midterm && lab && end) {
+        allocateGrades(regular, midterm, lab, end);
+        modal.style.display = "none"; // 关闭模态框
+      } else {
+        alert('请填写所有成绩');
+      }
+    });
+
+    function allocateGrades(regular, midterm, lab, end) {
+      console.log('Allocating grades with:', regular, midterm, lab, end, cname, tname);
+
+      fetch("/teacherSystem/allocateGrade", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `regular=${encodeURIComponent(regular)}&midterm=${encodeURIComponent(midterm)}&lab=${encodeURIComponent(lab)}&end=${encodeURIComponent(end)}&cname=${encodeURIComponent(cname)}&tname=${encodeURIComponent(tname)}`
+      })
+              .then(response => {
+                console.log('Response received:', response);
+                return response.json();
+              })
+              .then(data => {
+                if (data.success) {
+                  console.log('Grades allocated successfully');
+                  alert('成绩分配成功');
+                  location.reload(); // 重新加载页面以更新成绩
+                } else {
+                  console.error('Failed to allocate grades:', data);
+                  alert('成绩分配失败');
+                }
+              })
+              .catch(error => {
+                console.error('Error allocating grades:', error);
+                alert('网络错误，请稍后再试');
+              });
+    }
+
+    // 排序逻辑
+    function sortAndRender(sortFunc) {
+      console.log("Before sorting:", Data);
+
+      // Disable only the sorting buttons to prevent multiple clicks
+      const sortButtons = document.querySelectorAll('.sort-buttons .top-left-button');
+      sortButtons.forEach(button => button.disabled = true);
+
+      // Sort data using the provided function
+      sortFunc();
+
+      console.log("After sorting:", Data);
+
+      // Reset current page to 1 after sorting and re-render the table
+      currentPage = 1;
+      setTimeout(() => {
+        renderTable(currentPage); // Ensure this is using the sorted Data
+
+        // Re-enable only the sorting buttons after rendering
+        sortButtons.forEach(button => button.disabled = false);
+      }, 0);
+    }
+
+    function sortById() {
+      console.log("Sorting by ID");
+      sortAndRender(() => Data.sort((a, b) => a[0].localeCompare(b[0])));
+    }
+
+    function sortByTotal() {
+      console.log("Sorting by Total");
+      sortAndRender(() => Data.sort((a, b) => (b[6] || 0) - (a[6] || 0)));
+    }
+
+    // 初始渲染表格
+    renderTable(currentPage);
+  });
+</script>
+</body>
+</html>
+
+
+

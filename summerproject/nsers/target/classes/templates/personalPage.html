@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th= "https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+        }
+        .background {
+            background-image: url('/images/background.jpg');
+            background-size: cover;
+            background-position: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: transparent;
+            border-radius: 10px;
+            position: relative;
+            text-align: center; /* 让按钮居中 */
+        }
+        .exit-button {
+            background-color: red;
+            color: white; /* 改为白色，增加对比度 */
+            padding: 10px 20px; /* 增加左右padding */
+            border: none;
+            border-radius: 8px; /* 更圆滑的边角 */
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 20px; /* 调整字体大小 */
+            position: fixed;
+            bottom: 20px; /* 距离底部20px */
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 添加阴影，增加立体感 */
+            transition: background-color 0.3s, box-shadow 0.3s; /* 增加过渡效果 */
+        }
+
+        .exit-button:hover {
+            background-color: darkred; /* 悬停时背景颜色变化 */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* 悬停时阴影变化 */
+        }
+
+        .header {
+            background-color: #f2f2f2;
+            text-align: center;
+            padding: 10px;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: white;
+            flex-wrap: wrap;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .button-container button {
+            padding: 15px;
+            border: none;
+            background-color: transparent;
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .button-container button:hover {
+            transform: scale(1.1);
+        }
+        .button-container button img {
+            width: 40px;
+            height: 40px;
+            display: block;
+        }
+        .button-container button span {
+            margin-top: 5px;
+            font-size: 14px;
+        }
+        .button-container button.red {
+            background-color: red;
+        }
+
+        /* New styles for personal page sections */
+        .section-container {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out;
+        }
+        .section-container:hover {
+            transform: scale(1.05);
+        }
+        .section-container img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+        }
+        .section-container .content {
+            text-align: left;
+            flex: 1;
+            padding-left: 10px;
+        }
+        .section-container .content h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+        .section-container .content p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* New styles for the new containers */
+        .new-container {
+            display: none; /* Initially hide */
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .new-container img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+        }
+        .new-container .label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .new-container .input-field {
+            width: 80%;
+            margin: 0 auto;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .new-container .information-field {
+            width: 80%;
+            margin: 0 auto;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+
+
+
+        .new-container .submit-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            border: none;
+            background-color: #3366cc;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        .new-container .submit-button:hover {
+            background-color: #2554a8;
+        }
+        #semail{
+            margin-bottom: 100px;
+        }
+        #gradesList {
+            display: flex;
+            flex-wrap: wrap; /* 允许课程并排排列 */
+            gap: 10px; /* 课程之间的间距 */
+            padding: 10px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+
+        .grade-item {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 10px;
+            width: calc(33.333% - 10px); /* 每行三门课程 */
+            box-sizing: border-box;
+        }
+
+        .grade-item div {
+            margin-bottom: 5px;
+        }
+
+        .grade-item:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+<div class="background"></div>
+<button class="exit-button" onclick="exitbutton()" id="exit-button">登出</button>
+<div class="container">
+
+    <div class="button-container">
+        <button onclick="showNewsPage()"><img th:src="@{images/news.jpg}" alt="资讯"><span>资讯</span></button>
+        <button onclick="location.href='http://localhost:8080/functionPage'"><img th:src="@{images/service.jpg}" alt="服务"><span>服务</span></button>
+        <button color="grey" onclick="showPersonalConsultationSection()"><img th:src="@{images/personal.jpg}" alt="个人"><span>个人</span></button>
+        <button onclick="showEmailPage()"><img th:src="@{images/email.jpg}" alt="邮箱" ><span>邮箱</span></button>
+        <button onclick="location.href='http://localhost:8080/schoolBus/busMainPage'"><img th:src="@{images/schoolcar.jpg}" alt="校车" ><span>校车</span></button>
+    </div>
+
+    <!-- Personal Page Sections -->
+    <div class="section-container" id="personalSection" style="display: block;" onclick="showPersonalInfo()">
+        <img th:src="@{images/me.png}" alt="个人图片" id="personalIcon">
+        <div class="content">
+            <h3>个人信息</h3>
+            <p>点击进行查看</p>
+        </div>
+    </div>
+
+    <!-- 成绩信息容器 -->
+    <div class="new-container" id="gradesContainer" style="display: none;">
+        <h3>课程成绩</h3>
+        <div id="gradesList"></div>
+    </div>
+    <!-- New Containers -->
+    <div class="new-container" id="personalInfoContainer" >
+        <img th:src="@{images/me.jpg}" alt="个人图片" id="avatarShow" >
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" id="avatar" name="avatar" accept="image/*" required>
+            <button type="submit">上传头像</button>
+        </form>
+
+        <div class="label">姓名：</div>
+        <div class="information-field"  id="sname"></div>
+        <div class="label">性别：</div>
+        <div class="information-field"  id="sgender"></div>
+        <div class="label">学号：</div>
+        <div class="information-field"  id="sid"></div>
+        <div class="label">宿舍：</div>
+        <div class="information-field"  id="sdomitory"></div>
+        <div class="label">身份证号码：</div>
+        <div class="information-field"  id="snumber"></div>
+        <div class="label">籍贯：</div>
+        <div class="information-field"  id="sprovince"></div>
+        <div class="label">电话号码：</div>
+        <div class="input-field" contenteditable="false" id="sphone"  onclick="showSphoneEdit()" onblur="updateSphone()"></div>
+        <div class="label">市：</div>
+        <div class="input-field" contenteditable="false" id="scity"  onclick="showScityEdit()" onblur="updateScity()"></div>
+        <div class="label">邮箱：</div>
+        <div class="input-field" contenteditable="false" id="semail"   onclick="showSemailEdit()" onblur="updateSemail()"></div>
+    </div>
+
+<script>
+    function exitbutton() {
+        window.location.href = 'http://localhost:8080/startPage';    //登出账号并清理掉所有的localStorage
+        localStorage.clear();
+    }
+    var imageUrl;
+    document.getElementById('personalIcon').src=localStorage.getItem('imageUrl')    //令头像设置为上传过的头像
+    document.getElementById('uploadForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // 阻止默认的表单提交
+
+        var formData = new FormData();
+        var fileField = document.getElementById('avatar');
+
+        if (fileField.files.length > 0) {
+            formData.append('avatar', fileField.files[0]);
+            formData.append('sid',localStorage.getItem('studentid'))
+
+            fetch('/avatar', {      //发出请求
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    imageUrl= data.spicture;
+                    console.log('上传成功', data);
+                    document.getElementById('avatarShow').src = imageUrl;    //更改头像的显示url
+                    localStorage.setItem('imageUrl',imageUrl)      //更新用户的头像缓存
+
+                })
+                .catch(error => {
+                    console.error('上传失败', error);
+                });
+        } else {
+            alert('请选择要上传的文件');
+        }
+    });
+
+
+    function showEmailPage(){   //跳转到邮箱界面
+        if(localStorage.getItem('registerStudentEmail')==='true'){
+            window.location.href='http://localhost:8080/schoolemail/loginPage'
+        }else{
+            window.location.href='http://localhost:8080/schoolemail/applyPage'
+        }
+    }
+
+    function showPersonalInfo() {    //显示个人信息
+        document.getElementById('personalSection').style.display = 'none';    //让其他模块消失
+        document.getElementById('consultationSection').style.display = 'none';
+        document.getElementById('personalInfoContainer').style.display = 'block';
+        document.getElementById('consultationFormContainer').style.display = 'none';
+        document.getElementById('exit-button').style.display = 'none';
+        var sidIconPack = new FormData();
+        sidIconPack.append('sid',localStorage.getItem('studentid'))
+        fetch('/showSpicture', {   //发送请求
+            method: 'POST',
+            body: sidIconPack
+        })
+            .then(response => response.json())
+            .then(data => {
+                imageUrl= data.spicture;
+                console.log('上传成功', data);
+                document.getElementById('avatarShow').src = imageUrl;   //令头像显示为用户传输到服务器上的url
+                // 根据需要执行其他操作，例如更新用户界面等
+            })
+            .catch(error => {
+                console.error('上传失败', error);
+            });
+
+
+        const sidSend=localStorage.getItem("studentid")
+        const sidPack=new FormData();
+        sidPack.append('sid',sidSend)
+        fetch('/personalInfo',{   //发出请求
+            method:"POST",
+            body:sidPack
+        })
+            .then(response=>response.json())
+            .then(data=>{
+                if(data['success']){
+                    document.getElementById('sid').textContent=localStorage.getItem("studentid")    //更改个人信息的显示内容
+                    document.getElementById('sname').textContent=data['sname']
+                    document.getElementById('sgender').textContent=data['sgender']
+                    document.getElementById('sdomitory').textContent=data['dormitoryname']
+                    document.getElementById('snumber').textContent=data['snumber']
+                    document.getElementById('sprovince').textContent=data['sprovince']
+                    if(data['sphone']!==null){                               //从后端获取手机号，没有则为空
+                        document.getElementById('sphone').textContent=data['sphone']
+                        localStorage.setItem('sphone',data['sphone'])
+                        console.log('得到sphone')
+                    }
+
+                    if(data['scity']!==null){    //从后端获取城市，没有则为空
+                        document.getElementById('scity').textContent=data['scity']
+                        localStorage.setItem('scity',data['scity'])
+                        console.log('得到scity')
+                    }
+
+                    if(data['scity']!==null) {   //从后端获取邮箱，没有则为空
+                        document.getElementById('semail').textContent=data['semail']
+                        localStorage.setItem('semail',data['semail'])
+                        console.log('得到semail')
+                    }
+
+
+                }
+            })
+    }
+    function showNewsPage(){     //跳转到主界面
+        window.location.href='http://localhost:8080/newsPage'
+    }
+
+    function showConsultationForm() {   //显示常见问题
+        document.getElementById('personalSection').style.display = 'none';
+        document.getElementById('consultationSection').style.display = 'none';
+        document.getElementById('personalInfoContainer').style.display = 'none';
+        document.getElementById('consultationFormContainer').style.display = 'block';
+        document.getElementById('exit-button').style.display = 'none';
+    }
+
+    function showPersonalConsultationSection(){  //显示个人功能的主界面
+        document.getElementById('personalSection').style.display = 'block';
+        document.getElementById('consultationSection').style.display = 'block';
+        document.getElementById('personalInfoContainer').style.display = 'none';
+        document.getElementById('consultationFormContainer').style.display = 'none';
+        document.getElementById('personalIcon').src=localStorage.getItem('imageUrl')  //令头像缩略图显示为用户上传的头像
+        document.getElementById('exit-button').style.display = 'block';
+    }
+
+    function showSphoneEdit(){
+        document.getElementById('sphone').contentEditable="true"    //让电话号码的框体变为可编辑
+    }
+
+    // function showSprovinceEdit(){
+    //     document.getElementById('sprovince').contentEditable="true"
+    // }
+
+    function showScityEdit(){   //让城市的框体变得可编辑
+        document.getElementById('scity').contentEditable="true"
+    }
+
+    function showSemailEdit(){   //让邮箱的框体变得可编辑
+        document.getElementById('semail').contentEditable="true"
+    }
+
+    function updateSphone(){  //将编辑后的手机号回传至后端并更新
+        const sidSend=localStorage.getItem("studentid")
+        if(localStorage.getItem("sphone")!==document.getElementById('sphone').textContent){
+            localStorage.setItem('sphone',document.getElementById('sphone').textContent)
+        }
+        const sphoneSend=localStorage.getItem("sphone")
+        const sidPack=new FormData();
+        sidPack.append('sid',sidSend)
+        sidPack.append('sphone',sphoneSend)
+        fetch('/personalInfo',{
+            method:"POST",
+            body:sidPack
+        })
+            .then(response=>response.json())
+            .then(data=>{
+                if(data['success']){
+                    console.log('修改成功')
+                }
+            })
+        document.getElementById('sphone').contentEditable="false"
+    }
+
+    // function updateSprovince(){
+    //     const sidSend=localStorage.getItem("studentid")
+    //     if(localStorage.getItem("sprovince")!==document.getElementById('sprovince').textContent){
+    //         localStorage.setItem('sprovince',document.getElementById('sprovince').textContent)
+    //     }
+    //     const sprovinceSend=localStorage.getItem("sprovince")
+    //     const sidPack=new FormData();
+    //     sidPack.append('sid',sidSend)
+    //     sidPack.append('sprovince',sprovinceSend)
+    //     fetch('/personalInfo',{
+    //         method:"POST",
+    //         body:sidPack
+    //     })
+    //         .then(response=>response.json())
+    //         .then(data=>{
+    //             if(data['success']){
+    //                 console.log('修改成功')
+    //             }
+    //         })
+    //     document.getElementById('sprovince').contentEditable="false"
+    // }
+
+    function updateScity(){ //将编辑后的城市回传至后端并更新
+        const sidSend=localStorage.getItem("studentid")
+        if(localStorage.getItem("scity")!==document.getElementById('scity').textContent){
+            localStorage.setItem('scity',document.getElementById('scity').textContent)
+        }
+        const scitySend=localStorage.getItem("scity")
+        const sidPack=new FormData();
+        sidPack.append('sid',sidSend)
+        sidPack.append('scity',scitySend)
+        fetch('/personalInfo',{
+            method:"POST",
+            body:sidPack
+        })
+            .then(response=>response.json())
+            .then(data=>{
+                if(data['success']){
+                    console.log('修改成功')
+                }
+            })
+        document.getElementById('scity').contentEditable="false"
+    }
+
+    function updateSemail(){   //将编辑后的邮箱回传至后端并更新
+        const sidSend=localStorage.getItem("studentid")
+        if(localStorage.getItem("semail")!==document.getElementById('semail').textContent){
+            localStorage.setItem('semail',document.getElementById('semail').textContent)
+        }
+        const scitySend=localStorage.getItem("semail")
+        const sidPack=new FormData();
+        sidPack.append('sid',sidSend)
+        sidPack.append('semail',scitySend)
+        fetch('/personalInfo',{
+            method:"POST",
+            body:sidPack
+        })
+            .then(response=>response.json())
+            .then(data=>{
+                if(data['success']){
+                    console.log('修改成功')
+                }
+            })
+        document.getElementById('semail').contentEditable="false"
+    }
+
+    function fetchGrades() {
+        const studentId = localStorage.getItem("studentid");
+        const gradesPack = new FormData();
+        gradesPack.append('sid', studentId);
+
+        fetch('/grades', {
+            method: "POST",
+            body: gradesPack
+        })
+            .then(response => response.json())
+            .then(data => {
+                const gradesList = document.getElementById('gradesList');
+                gradesList.innerHTML = '';  // 清空之前的成绩列表
+
+                if (data && data.grades && data.grades.length > 0) {
+                    data.grades.forEach(grade => {
+                        const gradeItem = document.createElement('div');
+                        gradeItem.className = 'grade-item';
+                        gradeItem.innerHTML = `
+                    <div>课程名称: ${grade.cname}</div>
+                    <div>上课时间: ${grade.ctime}</div>
+                    <div>平时成绩: ${grade.regular}</div>
+                    <div>期中成绩: ${grade.midterm}</div>
+                    <div>实验成绩: ${grade.lab}</div>
+                    <div>期末成绩: ${grade.end}</div>
+                    <div>总成绩: ${grade.total}</div>
+                `;
+                        gradesList.appendChild(gradeItem);
+                    });
+                    document.getElementById('gradesContainer').style.display = 'block';  // 显示成绩区域
+                } else {
+                    document.getElementById('gradesList').innerHTML = '<p>暂无成绩数据</p>';
+                }
+            })
+            .catch(error => {
+                console.error('获取成绩失败', error);
+            });
+    }
+
+    // 在页面加载完成后获取成绩
+    document.addEventListener('DOMContentLoaded', fetchGrades);
+</script>
+
+</body>
+</html>
+

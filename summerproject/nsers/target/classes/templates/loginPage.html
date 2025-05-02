@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登录页面</title>
+  <style>
+    body {
+      background-color: transparent;
+      background-image: url('/images/background.jpg'); /* 添加背景图 */
+      background-size: cover; /* 背景图覆盖整个页面 */
+      background-position: center; /* 背景图居中显示 */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      border: none;
+    }
+
+    .login-form {
+      background-color: transparent; /* 设置表单背景色 */
+      padding: 20px;
+      border-radius: 50px; /* 设置圆角边框 */
+      text-align: center;
+      width: 300px; /* 设置表单宽度 */
+    }
+
+    .login-form input[type="text"],
+    .login-form input[type="password"] {
+      width: 100%; /* 输入框宽度占满父元素 */
+      padding: 10px; /* 输入框内边距 */
+      margin: 8px 0; /* 输入框之间的垂直间距 */
+      box-sizing: border-box; /* 盒模型设置为border-box */
+      border: 1px solid #ccc; /* 设置输入框边框 */
+      border-radius: 4px; /* 设置输入框圆角 */
+    }
+
+    .login-form button {
+      width: 100%; /* 按钮宽度占满父元素 */
+      padding: 12px; /* 按钮内边距 */
+      margin-top: 10px; /* 按钮上边距 */
+      background-color: #5599FF; /* 设置按钮背景色 */
+      color: white; /* 设置按钮文字颜色 */
+      border: none; /* 取消按钮边框 */
+      border-radius: 4px; /* 设置按钮圆角 */
+      cursor: pointer; /* 设置鼠标样式为手型 */
+    }
+
+    .login-form button:hover {
+      background-color: #99bbff; /* 鼠标悬停时按钮背景色 */
+    }
+
+    .login-form a {
+      text-decoration: none; /* 去除链接下划线 */
+      color: #555; /* 设置链接颜色 */
+      font-size: 14px; /* 设置链接字体大小 */
+      margin-top: 10px; /* 链接上边距 */
+      display: block; /* 设置为块级元素 */
+    }
+
+    .login-form a:hover {
+      color: #333; /* 鼠标悬停时链接颜色 */
+    }
+  </style>
+</head>
+<body>
+<div class="login-form">
+  <h2 style="color: black; text-align: center; font-size: 3em;">登录</h2>
+  <form id="loginForm" th:action="@{/start/login}" method="post">
+    <input type="text" id="userid" placeholder="请输入学号/教职工号" required>
+    <input type="password" id="userpassword" placeholder="请输入密码" required>
+    <div>
+      <input type="radio" id="student" name="role" value="student" required>
+      <label for="student">学生登录</label>
+      <input type="radio" id="teacher" name="role" value="teacher" required>
+      <label for="teacher">老师登录</label>
+      <input type="radio" id="admin" name="role" value="admin" required>
+      <label for="admin">教务端登录</label>
+    </div>
+    <button type="submit">登录</button>
+  </form>
+  <a href="http://localhost:8080/start/registerPage">没有账号？注册一个</a>
+  <a href="http://localhost:8080/start/emailVerificationPage">忘记密码</a>
+</div>
+
+<script>
+  // 监听表单提交事件
+  document.getElementById('loginForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // 阻止表单默认提交行为
+
+    var Roleradios = document.getElementsByName("role");
+    var selectedRole; // 从页面获取登录的账号类型
+    for (var i = 0; i < Roleradios.length; i++) {
+      if (Roleradios[i].checked) {
+        selectedRole = Roleradios[i].value;
+        break;
+      }
+    }
+    console.log(selectedRole);
+
+    if (selectedRole === 'student') { // 根据登录的账号类型进行分支处理
+      console.log('学生登入');
+      // 收集表单数据
+      var sid = document.getElementById('userid').value;
+      var spassword = document.getElementById('userpassword').value;
+
+      // 准备发送的数据
+      var studentData = new FormData();
+      studentData.append('sid', sid);
+      studentData.append('spassword', spassword);
+
+      // 使用fetch API发送数据到后端
+      fetch('/start/studentLogin', {
+        method: 'POST',
+        body: studentData
+      })
+              .then(response => response.json())
+              .then(data => {
+                if (data['success']) {
+                  console.log('登录成功');
+                  localStorage.setItem('studentid', sid);
+                  localStorage.setItem('studentemail', data['semail']);
+                  localStorage.setItem('registerStudentEmail', data['ebool']);
+                  localStorage.setItem('AvatarIsUploaded', data['update_photo']);
+                  localStorage.setItem('imageUrl', data.spicture);
+                  window.location.href = 'http://localhost:8080/start/authenticationPage'; // 定向至邮箱验证界面
+                } else {
+                  alert('登录失败，请检查账号或密码');
+                }
+              });
+    } else if (selectedRole === 'teacher') {
+      console.log('教师登入');
+      // 收集表单数据
+      var tnumber = document.getElementById('userid').value;
+      var tpassword = document.getElementById('userpassword').value;
+
+      // 准备发送的数据
+      var teacherData = new FormData();
+      teacherData.append('tnumber', tnumber);
+      teacherData.append('tpassword', tpassword);
+
+      // 使用fetch API发送数据到后端
+      fetch('/start/teacherLogin', {
+        method: 'POST',
+        body: teacherData
+      })
+              .then(response => response.json())
+              .then(data => {
+                if (data['success']) {
+                  console.log('登录成功');
+                  localStorage.setItem('teacherid', data['tid']);
+                  localStorage.setItem('teachername', data['tname']);
+                  window.location.href = 'http://localhost:8080/teacherSystem/teacherManagePage'; // 定向至教师管理界面
+                } else {
+                  alert('登录失败，请检查账号或密码');
+                }
+              });
+    } else if (selectedRole === 'admin') {
+      console.log('教务端登录');
+      // 收集表单数据
+      var adminId = document.getElementById('userid').value;
+      var adminPassword = document.getElementById('userpassword').value;
+
+      if (adminId === 'shy' && adminPassword === '1') {
+        console.log('登录成功');
+        window.location.href = 'http://localhost:8080/adminSystem/adminDashboard'; // 定向至教务端仪表盘
+      } else {
+        alert('登录失败，请检查账号或密码');
+      }
+    }
+  });
+</script>
+</body>
+</html>

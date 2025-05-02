@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th= "https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册</title>
+</head>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+    .background {
+        background-image: url('/images/background.jpg'); /* 替换 'your-background-image.jpg' 为你的实际图片路径 */
+        background-size: cover;
+        background-position: center;
+        object-fit: cover;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1; /* 确保它位于其他内容后面 */
+    }
+    .container {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        width: 300px;
+    }
+    .back-button {
+        background-color: transparent;
+        color: white;
+        padding: 10px;
+        border: none;
+        border-radius: 4px;
+        font-weight: bolder;
+        cursor: pointer;
+        font-size: 30px;
+        position: absolute; /* 使用绝对定位 */
+        top: 20px; /* 距离顶部20px */
+        left: 20px; /* 距离左侧20px */
+    }
+    .form-group {
+        margin-bottom: 15px;
+    }
+    .form-group label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    .form-group input {
+        width: calc(100% - 10px);
+        padding: 8px;
+        font-size: 14px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+    }
+    .form-group input[type="submit"] {
+        background-color: #5599FF;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+    .form-group input[type="submit"]:hover {
+        background-color: #99bbff;
+    }
+</style>
+</head>
+<body>
+<div class="background"></div>
+<div class="container">
+    <button class="back-button" onclick="backbutton()">←</button>
+    <h2>注册界面</h2>
+    <form th:action="@{/start/register}" method="post" id="Reg-Form">
+        <div class="form-group">
+            <label for="sid">学号</label>
+            <input type="text" id="sid" name="sid" required onblur="CheckIfReg()">
+        </div>
+        <div class="form-group">
+            <label for="spassword1">设置密码</label>
+            <input type="password" id="spassword1" name="spassword1" required >
+        </div>
+        <div class="form-group">
+            <label for="spassword2">确认密码</label>
+            <input type="password" id="spassword2" name="spassword2" required onblur="CheckPasswordEquation()">
+        </div>
+        <div class="form-group">
+            <label for="sphone">电话号码</label>
+            <input type="tel" id="sphone" name="sphone" required>
+        </div>
+        <div class="form-group">
+            <label for="semail">邮箱</label>
+            <input type="email" id="semail" name="semail" required>
+        </div>
+        <div class="form-group">
+            <input type="submit" value="注册">
+        </div>
+    </form>
+</div>
+<script>
+    var isRegistered = false; // 标志变量，初始状态为未注册
+
+    function backbutton() {
+        window.location.href = 'http://localhost:8080/startPage';
+    }
+
+    function CheckPasswordEquation() {
+        var spassword1 = document.getElementById('spassword1').value;
+        var spassword2 = document.getElementById('spassword2').value;
+        var spassword2Form = document.getElementById('spassword2');
+        if (spassword1 != spassword2) {
+            spassword2Form.style.borderColor = 'red';
+        } else {
+            spassword2Form.style.borderColor = 'green';
+        }
+    }
+
+    function CheckIfReg() {
+        var sid = document.getElementById('sid').value;
+        var sidForm = document.getElementById('sid');
+
+        const IDCheck = new FormData();
+        IDCheck.append('sid', sid);
+
+        fetch('/start/judgeRegister', {
+            method: 'POST',
+            body: IDCheck
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data['success']) {
+                    sidForm.style.borderColor = 'green';
+                    isRegistered = false; // 学号未注册
+                    document.getElementById('registerButton').disabled = false; // 启用注册按钮
+                } else {
+                    sidForm.style.borderColor = 'red';
+                    isRegistered = true; // 学号已注册
+                    document.getElementById('registerButton').disabled = true; // 禁用注册按钮
+                }
+            });
+    }
+
+    document.getElementById('Reg-Form').addEventListener('submit', function (event) {
+        event.preventDefault();
+        if (isRegistered) {
+            alert('该学号已被注册，请重新输入！');
+            return; // 阻止表单提交
+        }
+        var sid =document.getElementById('sid').value;
+        var spassword1 =document.getElementById('spassword1').value;
+        var spassword2 =document.getElementById('spassword2').value;
+        var sphone =document.getElementById('sphone').value;
+        var semail =document.getElementById('semail').value;
+
+
+        const Submitdata =new FormData();
+        Submitdata.append('sid',sid);
+        Submitdata.append('spassword1',spassword1);
+        Submitdata.append('spassword2',spassword2);
+        Submitdata.append('sphone',sphone);
+        Submitdata.append('semail',semail);
+        fetch('/start/register',{
+            method: 'POST',
+            body: Submitdata
+        })
+            .then(response =>response.json())
+            .then(data =>{
+                if(data['success']){
+                    alert(data['message'])
+                    console.log('注册完成')
+                    window.location.href='http://localhost:8080/start/loginPage'   //成功后回到登录界面
+                }else{
+                    alert(data['message'])
+                    console.log('注册失败')
+                    window.location.href='http://localhost:8080/start/registerPage'  //失败后不跳转
+                }
+            })
+    })
+</script>
+
+</body>
+</html>
+
+
